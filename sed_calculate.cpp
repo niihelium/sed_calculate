@@ -96,9 +96,26 @@ void readKnu() {
 }
 
 double getKnu(double t) {
-	double Knu;
+	int index;
+	double Knu, sum, min;
+	min = t;
+	for (list<double>::iterator it = k_nu_temp.begin(); it != k_nu_temp.end();
+			it++) {
+		sum = abs(*it - t);
+		if (sum < min) {
+			min = sum;
+			index = it - k_nu_temp.begin();
+		}
+	}
 
-	return Knu;
+	if (k_nu.size() > index) {
+		list<double>::iterator it = k_nu.begin();
+		advance(it, index);
+		// 'it' points to the element at index 'N'
+		return *it;
+	}
+
+	return 0;
 }
 
 double calcOuterDiscCell(Cell cell, int nu) {
