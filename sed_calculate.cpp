@@ -9,23 +9,23 @@
 #include <algorithm>
 #include <list>
 //boost
-#include <lexical_cast.hpp>
-#include <foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/foreach.hpp>
 //classes
 #include "cell.cpp"
 #include "constants.h"
+#include "functions.cpp"
 
 using namespace std;
 
 static const char *grid = "../data/grid.dat";
 static const char *var030 = "../data/var030.dat";
+static const char *opacities = "../data/opacities_oh2.tbl";
 
 static const double gamma_incl = 0;
 static const double t_background = 1.00000000e+01; //10 k
 static const double d = 3.08568000e+20; //100pc distance to object cm
 static const double phi0 = 0;
-
-
 
 int lines_count;
 
@@ -35,6 +35,9 @@ double system_age;
 
 list<Cell> cells_outer;
 list<int> line_index;
+
+list<double> k_nu_temp;
+list<double> k_nu;
 
 void readOuterData() {
 	//grid.dat
@@ -56,7 +59,7 @@ void readOuterData() {
 	while (true) {
 		++curr_line_index;
 
-		cout << "Current line:" <<curr_line_index << endl;
+		cout << "Current line:" << curr_line_index << endl;
 
 		file_grid >> rt >> phit >> St;
 		file_var >> sigmat >> t_midplane >> thetat;
@@ -66,69 +69,48 @@ void readOuterData() {
 
 		if (St != 0 && rt >= 0.970332E-04) { //Reading line if S != 0 and r >= 20 AU
 			cells_outer.insert(cells_outer.end(),
-					Cell(curr_line_index, rt, phit, St, sigmat, t_midplane,	thetat));
+					Cell(curr_line_index, rt, phit, St, sigmat, t_midplane,
+							thetat, t_surf(t_background, t_midplane)));
 		}
-		if(file_grid.eof() || file_var.eof()) break;
+		if (file_grid.eof() || file_var.eof())
+			break;
 	}
 	file_grid.close();
 	file_var.close();
 }
 
-/*void readVarXXXData() {
+void readKnu() {
+	double k_nu_temp_t, k_nu_t;
 
- int curr_line_index = 0;
- list<int>::iterator it = line_index.begin();
+	ifstream file_opacities(opacities);
+	while (true) {
+		file_opacities >> k_nu_temp_t >> k_nu_t;
 
+		k_nu_temp.insert(k_nu_temp.end(), k_nu_temp_t);
+		k_nu.insert(k_nu.end(), k_nu_t);
 
- double sigmat, t_midplane, St;
+		if (file_opacities.eof())
+			break;
+	}
 
+}
 
- while () { //while not eof
- ++curr_line_index;              //increase counter current line
- if(curr_line_index == *it){
- sigma.insert(sigma.end(), sigmat);
- t_midplane.insert(t_midplane.end(), phit);
- SOuter.insert(SOuter.end(), St);
- }
- ++it;
- }
+double getKnu(double t) {
+	double Knu;
 
- }*/
+	return Knu;
+}
 
-double F_c() {
- double F_c;
- F_c = Lambda / SIGMA * t_midplane * (theta / 1 + pow(theta, 2)); //5 formula
- return F_c;
- }
-
- double F_irr() {
- double F_irr;
- F_irr = (L / 4 * M_PI * pow(r, 2)) * cos(gamma_irr); //eq 8 cos(gamma_irr) = 0.05 L = Arate 3+4
- return F_irr;
- }
-
- double t_surf(double t_background, double t_midplane) {
- double t_surf;
- t_surf = 1 / 2 * (F_c * t_midplane) * (1 / 1 + t) + t_background // 15 formula
- + F_irr / SIGMA;
- return t_surf;
- }
-
- double planck(double nu, double t_surf) {
- double B;
- B = (2 * h * pow(nu, 3) / pow(c, 2))
- * (1 / pow(M_E, h * nu / K_BOLtZ * t_surf) - 1); //Planck law
- return B;
- }
-
- double calcOuterDiscCell(Cell cell) {
- double B = planck(nu, t_surf(t_background, cell.T_midplane_));
- double F;
- F = (cell.s_ / d ^ 2) * B
- * (1 - pow(M_E, -epsilon * Knu * (1 / cos(gamma_incl)))); // 14 formula (planck+ t_surf)
- return F;
-
- }
+double calcOuterDiscCell(Cell cell, int nu) {
+	double B = planck(nu, cell.t_surface_);
+	double F;
+	F = (cell.s_ / d ^ 2) * B
+			* (1
+					- pow(M_E,
+							-epsilon * getKnu(cell.t_surface_)
+									* (1 / cos(gamma_incl)))); // 14 formula (planck+ t_surf)
+	return F;
+}
 
 int main(int argc, char **argv) {
 	/*	int number = countLines();
@@ -137,13 +119,15 @@ int main(int argc, char **argv) {
 	readOuterData();
 	cout << "Data reading complete" << endl;
 	cout << system_age << endl;
-	for (list<Cell>::iterator it = cells_outer.begin(); it != cells_outer.end(); it++){
-	    cout << *it;
-	    cout << endl;
+	for (list<Cell>::iterator it = cells_outer.begin(); it != cells_outer.end();
+			it++) {
+		cout << *it;
+		cout << endl;
 	}
 
-	for(Cell & cell : cells_outer){
-		calcOuterDiscCell(cell);
+	for (Cell & cell : cells_outer) {
+		for (int nu = pow(10, -1); nu < pow(10, 3); nu = nu + 0.1)
+			calcOuterDiscCell(cell, nu);
 	}
 
 	cin.ignore();

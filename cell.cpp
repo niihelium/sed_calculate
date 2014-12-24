@@ -10,8 +10,8 @@ using namespace std;
 
 class Cell {
 public:
-	inline Cell(int line_index, double r, double phi, double s, double sigma, double T_midplane, double theta)
-	:line_index_ (line_index), sigma_ (sigma), T_midplane_ (T_midplane), theta_ (theta), r_ (r), phi_ (phi), s_ (s){};
+	inline Cell(int line_index, double r, double phi, double s, double sigma, double T_midplane, double theta, double t_surface)
+	:line_index_ (line_index), sigma_ (sigma), T_midplane_ (T_midplane), theta_ (theta), r_ (r), phi_ (phi), s_ (s), t_surface_ (t_surface){};
 	~Cell(){
 
 	};
@@ -27,6 +27,9 @@ public:
 	double r_;
 	double phi_;
 	double s_;
+
+	//calculated data
+	double t_surface_;
 
 	friend ostream& operator<<(ostream& os, const Cell& cell){
 		os << cell.line_index_ << cell.r_ << cell.phi_ << cell.T_midplane_;

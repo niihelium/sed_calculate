@@ -4,9 +4,6 @@
 *.o
 *.obj
 
-.cproject
-.project
-
 # Precompiled Headers
 *.gch
 *.pch
