@@ -10,7 +10,7 @@
 using namespace std;
 
 
-Cell::Cell(int line_index, double r, double phi, double s, double sigma, double T_midplane, double theta, double t_surface){
+Cell::Cell(int line_index, double r, double phi, double s, double sigma, double T_midplane, double theta){
      line_index_ = line_index;
      sigma_ = sigma;
      T_midplane_ = T_midplane;
@@ -18,7 +18,6 @@ Cell::Cell(int line_index, double r, double phi, double s, double sigma, double 
      r_ = r;
      phi_ = phi;
      s_ = s;
-     t_surface_ = t_surface; 
 };
 
 

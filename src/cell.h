@@ -7,7 +7,7 @@ private:
     Cell() { }// private default constructor
  
 public:
-	Cell(int line_index, double r, double phi, double s, double sigma, double T_midplane, double theta, double t_surface);
+	Cell(int line_index, double r, double phi, double s, double sigma, double T_midplane, double theta);
 
 	int line_index_;
 
@@ -20,9 +20,6 @@ public:
 	double r_;
 	double phi_;
 	double s_;
-
-	//calculated data
-	double t_surface_;
 };
  
 #endif

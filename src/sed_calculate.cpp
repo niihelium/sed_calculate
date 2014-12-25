@@ -14,6 +14,7 @@
 #include <boost/foreach.hpp>
 //classes
 #include "./data_reader.h"
+#include "./functions.h"
 
 using namespace std;
 
@@ -26,6 +27,7 @@ int lines_count;
 //Calculation variables
 //varXXX.dat
 double system_age;
+double star_luminocity;
 
 list<Cell> cells_outer;
 list<int> line_index;
@@ -45,10 +47,10 @@ double getKnu(double t) {
 		if (sum < min) {
 			min = sum;
 			index = distance(k_nu_temp.begin(), it);
-			cout << "Temp is: " << *it << endl;
+			//cout << "Temp is: " << *it << endl;
 		}
 	}
-	cout << "Index is: " << index << endl;
+	//cout << "Index is: " << index << endl;
 
 	if (k_nu.size() > index) {
 		list<double>::iterator it = k_nu.begin();
@@ -62,38 +64,37 @@ double getKnu(double t) {
 	return Knu;
 }
 
-/*double calcOuterDiscCell(Cell cell, int nu) {
-	double B = planck(nu, cell.t_surface_);
+double calcOuterDiscCell(Cell cell, double nu) {
+	double B = planck(nu, t_surf(cell, star_luminocity));
 	double F;
-	F = (cell.s_ / d ^ 2) * B
-			* (1
-					- pow(M_E,
-							-epsilon * getKnu(cell.t_surface_)
-									* (1 / cos(gamma_incl)))); // 14 formula (planck+ t_surf)
+	F = (cell.s_ / pow(d, 2)) * B* (1 - pow(M_E,-cell.sigma_ * getKnu(t_surf(cell, star_luminocity)) * (1 / cos(gamma_incl)))); // 14 formula (planck+ t_surf)
 	return F;
-}*/
+}
 
 int main(int argc, char **argv) {
 	/*	int number = countLines();
 	 cout << "Lines in file: " << number << endl;*/
 	cout << "Reading data" << endl;
 	DataReader::readOuterData(system_age, cells_outer);
-	//DataReader::readKnu();
-	cout << DataReader::readArate(system_age) << endl;
+	DataReader::readKnu(k_nu_temp, k_nu);
+	DataReader::readArate(system_age, star_luminocity);
 	cout << "Data reading complete" << endl;
-	cout.precision(22);
 	//cout << system_age << endl;
 	/*for (list<Cell>::iterator it = cells_outer.begin(); it != cells_outer.end();
 			it++) {
 		cout << *it;
 		cout << endl;
 	}*/
-
-	/*for (Cell & cell : cells_outer) {
-		for (int nu = pow(10, -1); nu < pow(10, 3); nu = nu + 0.1)
+	cout << "First cell: "  << cells_outer.front().line_index_ << " Last cell: " << cells_outer.back().line_index_ << endl;
+	for (Cell & cell : cells_outer) {
+		cout << cell.line_index_ << endl;
+		for (double nu = pow(10, -1); nu < pow(10, 3); nu = nu + 0.1){
 			calcOuterDiscCell(cell, nu);
-	}*/
+		}
+		
+	}
 
+	cout << "done" << endl;
 	cin.ignore();
 	return 0;
 }

@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -std=c++11
 BOOSTINCLUDE = -I /home/nii/.boost/boost_1_57_0
 LDFLAGS = -lm
 

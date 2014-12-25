@@ -49,7 +49,7 @@ void DataReader::readOuterData(double &system_age, list<Cell> &cells_outer){
 				if (St != 0 && rt >= 0.970332E-04) { //Reading line if S != 0 and r >= 20 AU
 					cells_outer.insert(cells_outer.end(),
 							Cell(curr_line_index, rt, phit, St, sigmat, t_midplane,
-									thetat, t_surf(t_midplane)));
+									thetat));
 				}
 				if (file_grid.eof() || file_var.eof())
 					break;
@@ -73,7 +73,7 @@ void DataReader::readKnu(list<double> &k_nu_temp, list<double> &k_nu){
 			}
 }
 
-double DataReader::readArate(double &system_age){
+double DataReader::readArate(double system_age, double &star_luminocity){
 	cout << "readArate" << endl;
 	int curr_line_index;
 	double age_t, L_accr, L_photo, L_full, diff, min, dumb;
@@ -81,17 +81,7 @@ double DataReader::readArate(double &system_age){
 	cout << "Min: " << min << endl;
 	cout << "system_age: " << system_age << endl;
 	ifstream file_Arate(Arate.c_str());
-	/*while (true){
-		++curr_line_index;
-		file_Arate >> age_t >> dumb >> dumb >> dumb >> dumb >> dumb >> dumb >> dumb >> dumb;
-		cout << age_t << endl;
-		cout << curr_line_index << endl;
-		diff = abs(age_t - system_age);
-		if (diff<min)
-			min = diff;
-		if(file_Arate.eof())
-			break;
-	}*/
+
 	string line;
 	while (getline(file_Arate, line)){
 		++curr_line_index;
@@ -105,8 +95,6 @@ double DataReader::readArate(double &system_age){
 		} else {
 			break;
 		}
-	    //cout << age_t << endl;
-	    //cout << curr_line_index << endl;
 	}
 	cout << "age_t: " << age_t << " L_accr: " << L_accr << " L_photo: " << L_photo << endl;
 	cout << curr_line_index << "diff: " << diff << endl;

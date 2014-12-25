@@ -15,7 +15,7 @@ class DataReader
 
 		static void readKnu(std::list<double> &k_nu_temp, std::list<double> &k_nu);
 
-		static double readArate(double &system_age);
+		static double readArate(double system_age, double &star_luminocity);
 
 
 };
