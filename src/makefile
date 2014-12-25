@@ -12,11 +12,14 @@ constants.o : constants.cpp
 functions.o : functions.cpp
 	${CC} ${CFLAGS} -c ${BOOSTINCLUDE} functions.cpp
 
-sed_calculate.o : sed_calculate.cpp cell.cpp constants.cpp
+data_reader.o : data_reader.cpp data_reader.h cell.cpp functions.cpp
+	${CC} ${CFLAGS} -c ${BOOSTINCLUDE} data_reader.cpp	
+
+sed_calculate.o : sed_calculate.cpp functions.cpp data_reader.cpp
 	${CC} ${CFLAGS} -c ${BOOSTINCLUDE} sed_calculate.cpp
 
-sed_calculate : sed_calculate.o functions.o constants.o cell.o
-	${CC} ${CFLAGS} ${BOOSTINCLUDE} cell.o constants.o functions.o sed_calculate.o ${LDFLAGS} -o sed_calculate
+sed_calculate : sed_calculate.o data_reader.o functions.o constants.o cell.o
+	${CC} ${CFLAGS} ${BOOSTINCLUDE} cell.o constants.o functions.o data_reader.o sed_calculate.o ${LDFLAGS} -o sed_calculate
 
 clean :
-	rm cell.o functions.o sed_calculate.o sed_calculate
+	rm cell.o functions.o data_reader.o constants.o sed_calculate.o sed_calculate

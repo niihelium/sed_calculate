@@ -1,7 +1,7 @@
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
 #include <math.h>
 #include <fstream>
 #include <sstream>
@@ -14,15 +14,11 @@
 #include <boost/foreach.hpp>
 //classes
 #include "functions.cpp"
+#include "data_reader.cpp"
 
 using namespace std;
 
-static const char *grid = "../data/grid.dat";
-static const char *var030 = "../data/var030.dat";
-static const char *opacities = "../data/opacities_oh2.tbl";
-
 static const double gamma_incl = 0;
-static const double t_background = 1.00000000e+01; //10 k
 static const double d = 3.08568000e+20; //100pc distance to object cm
 static const double phi0 = 0;
 
@@ -38,61 +34,7 @@ list<int> line_index;
 list<double> k_nu_temp;
 list<double> k_nu;
 
-/*void readOuterData() {
-	//grid.dat
-	double rt, phit, St;
-	//varXXX.dat
-	double sigmat, t_midplane, thetat;
-	int curr_line_index = 0;
 
-	ifstream file_grid(grid);
-	ifstream file_var(var030);
-
-	file_var >> system_age;
-	cout.precision(22);
-	cout << fixed << system_age << endl;
-
-	cout << system_age;
-	cin.ignore();
-
-	while (true) {
-		++curr_line_index;
-
-		cout << "Current line:" << curr_line_index << endl;
-
-		file_grid >> rt >> phit >> St;
-		file_var >> sigmat >> t_midplane >> thetat;
-
-		//cout << "rt:"<< rt << "phit:" << phit << "St:" << St << endl;
-		//cout << "rt:"<< sigmat << "t_midplane:" << t_midplane<< "thetat:" << thetat << endl;
-
-		if (St != 0 && rt >= 0.970332E-04) { //Reading line if S != 0 and r >= 20 AU
-			cells_outer.insert(cells_outer.end(),
-					Cell(curr_line_index, rt, phit, St, sigmat, t_midplane,
-							thetat, t_surf(t_background, t_midplane)));
-		}
-		if (file_grid.eof() || file_var.eof())
-			break;
-	}
-	file_grid.close();
-	file_var.close();
-}*/
-
-void readKnu() {
-	double k_nu_temp_t, k_nu_t;
-
-	ifstream file_opacities(opacities);
-	while (true) {
-		file_opacities >> k_nu_temp_t >> k_nu_t;
-
-		k_nu_temp.insert(k_nu_temp.end(), k_nu_temp_t);
-		k_nu.insert(k_nu.end(), k_nu_t);
-
-		if (file_opacities.eof())
-			break;
-	}
-
-}
 
 double getKnu(double t) {
 	int index;
@@ -136,8 +78,8 @@ int main(int argc, char **argv) {
 	/*	int number = countLines();
 	 cout << "Lines in file: " << number << endl;*/
 	cout << "Reading data" << endl;
-	//readOuterData();
-	readKnu();
+	DataReader::readOuterData();
+	DataReader::readKnu();
 	cout << "Data reading complete" << endl;
 	cout.precision(22);
 	/*for (list<double>::iterator it = k_nu_temp.begin(); it != k_nu_temp.end();

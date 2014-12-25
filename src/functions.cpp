@@ -16,7 +16,7 @@
 #include "cell.h"
 #include "constants.cpp"
 
-/*double F_c() {
+double F_c() {
 	double F_c;
 	F_c = Lambda / SIGMA * t_midplane * (theta / 1 + pow(theta, 2)); //5 formula
 	return F_c;
@@ -30,11 +30,12 @@ double F_irr() {
 
 double t_surf(double t_background, double t_midplane) {
 	double t_surf;
-	t_surf = 1 / 2 * (F_c * t_midplane) * (1 / 1 + t) + t_background // 15 formula
-			+ F_irr / SIGMA;
+	t_surf = 1 / 2 * (F_c() * t_midplane) * (1 / 1 + t) + t_background // 15 formula
+			+ F_irr() / SIGMA;
 	return t_surf;
 }
 
+/*
 double planck(double nu, double t_surf) {
 	double B;
 	B = (2 * h * pow(nu, 3) / pow(c, 2))
