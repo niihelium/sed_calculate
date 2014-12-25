@@ -13,10 +13,10 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 //classes
-#include "cell.cpp"
-#include "constants.h"
+#include "cell.h"
+#include "constants.cpp"
 
-double F_c() {
+/*double F_c() {
 	double F_c;
 	F_c = Lambda / SIGMA * t_midplane * (theta / 1 + pow(theta, 2)); //5 formula
 	return F_c;
@@ -40,5 +40,5 @@ double planck(double nu, double t_surf) {
 	B = (2 * h * pow(nu, 3) / pow(c, 2))
 			* (1 / pow(M_E, h * nu / K_BOLtZ * t_surf) - 1); //Planck law
 	return B;
-}
+}*/
 
