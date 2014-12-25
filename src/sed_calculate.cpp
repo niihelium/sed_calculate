@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
-#include <math.h>
+#include <cmath>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -13,8 +13,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 //classes
-#include "functions.cpp"
-#include "data_reader.cpp"
+#include "./data_reader.h"
 
 using namespace std;
 
@@ -78,21 +77,11 @@ int main(int argc, char **argv) {
 	/*	int number = countLines();
 	 cout << "Lines in file: " << number << endl;*/
 	cout << "Reading data" << endl;
-	DataReader::readOuterData();
-	DataReader::readKnu();
+	DataReader::readOuterData(system_age, cells_outer);
+	//DataReader::readKnu();
+	cout << DataReader::readArate(system_age) << endl;
 	cout << "Data reading complete" << endl;
 	cout.precision(22);
-	/*for (list<double>::iterator it = k_nu_temp.begin(); it != k_nu_temp.end();
-				it++) {
-		cout << *it << endl;
-	}*/
-
-	cout << "K_nu is:" << getKnu(4);
-
-	/*for (list<double>::iterator it = k_nu.begin(); it != k_nu.end();
-					it++) {
-			cout << *it << endl;
-		}*/
 	//cout << system_age << endl;
 	/*for (list<Cell>::iterator it = cells_outer.begin(); it != cells_outer.end();
 			it++) {
