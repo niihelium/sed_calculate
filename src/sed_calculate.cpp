@@ -85,15 +85,33 @@ int main(int argc, char **argv) {
 		cout << *it;
 		cout << endl;
 	}*/
+	double spectre[100];
+	int spectre_pos;
 	cout << "First cell: "  << cells_outer.front().line_index_ << " Last cell: " << cells_outer.back().line_index_ << endl;
 	for (Cell & cell : cells_outer) {
 		cout << cell.line_index_ << endl;
-		for (double nu = pow(10, -1); nu < pow(10, 3); nu = nu + 0.1){
-			calcOuterDiscCell(cell, nu);
+		spectre_pos = 0;
+		for (double nu = 1; nu < pow(10, 3); nu = nu + 10){
+			double counting_result =calcOuterDiscCell(cell, nu);
+			//cout << counting_result << endl;
+			if (counting_result == counting_result && !std::isinf(counting_result))
+				spectre[spectre_pos] = spectre[spectre_pos] + counting_result;
+			spectre_pos++;
 		}
 		
 	}
 
+	ofstream fout("result.dat");
+	if(fout.is_open()){
+    //file opened successfully so we are here
+    cout << "File Opened successfully!!!. Writing data from array to file" << endl;
+
+		for(int i = 0; i < 100; i++)
+		{
+      		fout << spectre[i] << endl; //writing ith character of array in the file
+		}
+    cout << "Array data successfully saved into the file test.txt" << endl;
+	}
 	cout << "done" << endl;
 	cin.ignore();
 	return 0;
