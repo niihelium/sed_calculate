@@ -29,24 +29,22 @@ void DataReader::readOuterData(double &system_age, list<Cell> &cells_outer){
 			ifstream file_var(var030.c_str());
 
 			file_var >> system_age;
+			double dumb;
 			cout.precision(6);
-			cout << scientific;
-			cout << scientific << system_age << endl;
-
-			cout << system_age;
+			//cout << scientific;
+			//cout << scientific << system_age << endl;
 
 			while (true) {
-				++curr_line_index;
-
-				//cout << "Current line:" << curr_line_index << endl;
+				++curr_line_index;				
 
 				file_grid >> rt >> phit >> St;
-				file_var >> sigmat >> t_midplane >> thetat;
-
-				//cout << "rt:"<< rt << "phit:" << phit << "St:" << St << endl;
-				//cout << "rt:"<< sigmat << "t_midplane:" << t_midplane<< "thetat:" << thetat << endl;
+				file_var >> sigmat >> t_midplane >> thetat >> dumb >> dumb >> dumb >> dumb;
+				
 
 				if (St != 0 && rt >= 0.970332E-04) { //Reading line if S != 0 and r >= 20 AU
+					//cout << "Current line:" << curr_line_index << endl;
+					//cout << "rt: "<< rt << " phit: " << phit << " St: " << St << endl;
+					//cout << "sigmat: "<< sigmat << " t_midplane: " << t_midplane<< " thetat: " << thetat << endl;
 					cells_outer.insert(cells_outer.end(),
 							Cell(curr_line_index, rt, phit, St, sigmat, t_midplane,
 									thetat));
@@ -73,13 +71,13 @@ void DataReader::readKnu(list<double> &k_nu_temp, list<double> &k_nu){
 			}
 }
 
-double DataReader::readArate(double system_age, double &star_luminocity){
-	cout << "readArate" << endl;
+double DataReader::readArate(double system_age, double &star_luminocity){ //working good
+	//cout << "readArate" << endl;
 	int curr_line_index;
 	double age_t, L_accr, L_photo, L_full, diff, min, dumb;
 	min = std::numeric_limits<double>::max();
-	cout << "Min: " << min << endl;
-	cout << "system_age: " << system_age << endl;
+	//cout << "Min: " << min << endl;
+	//cout << "system_age: " << system_age << endl;
 	ifstream file_Arate(Arate.c_str());
 
 	string line;
@@ -96,7 +94,7 @@ double DataReader::readArate(double system_age, double &star_luminocity){
 			break;
 		}
 	}
-	cout << "age_t: " << age_t << " L_accr: " << L_accr << " L_photo: " << L_photo << endl;
-	cout << curr_line_index << "diff: " << diff << endl;
+	//cout << "age_t: " << age_t << " L_accr: " << L_accr << " L_photo: " << L_photo << endl;
+	//cout << curr_line_index << "diff: " << diff << endl;
 	return L_full;
 }

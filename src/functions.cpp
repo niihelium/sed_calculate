@@ -9,9 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-//boost
-#include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
 //classes
 #include "functions.h"
 #include "cell.h"

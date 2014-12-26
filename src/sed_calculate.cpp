@@ -9,9 +9,6 @@
 #include <algorithm>
 #include <list>
 #include <iterator>
-//boost
-#include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
 //classes
 #include "./data_reader.h"
 #include "./functions.h"
@@ -38,6 +35,7 @@ list<double> k_nu;
 
 
 double getKnu(double t) {
+	//cout << "getKnu is: " << endl;
 	int index;
 	double Knu, sum, min;
 	min = t;
@@ -85,13 +83,13 @@ int main(int argc, char **argv) {
 		cout << *it;
 		cout << endl;
 	}*/
-	double spectre[100];
+	double spectre[10];
 	int spectre_pos;
 	cout << "First cell: "  << cells_outer.front().line_index_ << " Last cell: " << cells_outer.back().line_index_ << endl;
 	for (Cell & cell : cells_outer) {
 		cout << cell.line_index_ << endl;
 		spectre_pos = 0;
-		for (double nu = 1; nu < pow(10, 3); nu = nu + 10){
+		for (double nu = 1; nu < pow(10, 3); nu = nu + 100){
 			double counting_result =calcOuterDiscCell(cell, nu);
 			//cout << counting_result << endl;
 			if (counting_result == counting_result && !std::isinf(counting_result))
@@ -106,7 +104,7 @@ int main(int argc, char **argv) {
     //file opened successfully so we are here
     cout << "File Opened successfully!!!. Writing data from array to file" << endl;
 
-		for(int i = 0; i < 100; i++)
+		for(int i = 0; i < 10; i++)
 		{
       		fout << spectre[i] << endl; //writing ith character of array in the file
 		}
