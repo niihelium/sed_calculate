@@ -39,7 +39,10 @@ void DataReader::readOuterData(double &system_age, list<Cell> &cells_outer){
 
 				file_grid >> rt >> phit >> St;
 				file_var >> sigmat >> t_midplane >> thetat >> dumb >> dumb >> dumb >> dumb;
-				
+				//Convert to SGS 
+				rt = rt*3.08567758128e+18;
+				St = St*3.08567758128e+18;
+
 
 				if (St != 0 && rt >= 0.970332E-04) { //Reading line if S != 0 and r >= 20 AU
 					//cout << "Current line:" << curr_line_index << endl;
@@ -90,6 +93,7 @@ double DataReader::readArate(double system_age, double &star_luminocity){ //work
 		if (diff<min){
 			min = diff;
 	    	L_full = L_accr + L_photo;
+	    	L_full = L_full*3,827e+33;
 		} else {
 			break;
 		}
