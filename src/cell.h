@@ -7,19 +7,19 @@ private:
     Cell() { }// private default constructor
  
 public:
-	Cell(int line_index, double r, double phi, double s, double sigma, double T_midplane, double theta);
+	Cell(int line_index, long double r, long double phi, long double s, long double sigma, long double T_midplane, long double tau);
 
 	int line_index_;
 
 	//varXXX.dat
-	double sigma_;
-	double T_midplane_;
-	double theta_;
+	long double sigma_;
+	long double T_midplane_;
+	long double tau_;
 
 	//grid.dat
-	double r_;
-	double phi_;
-	double s_;
+	long double r_;
+	long double phi_;
+	long double s_;
 };
  
 #endif

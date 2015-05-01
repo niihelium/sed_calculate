@@ -11,11 +11,11 @@ class DataReader
 		static const std::string opacities;
 		static const std::string Arate;
 	public:
-		static void readOuterData(double &system_age, std::list<Cell> &cells_outer); 
+		static void readOuterData(long double &system_age, std::list<Cell> &cells_outer); 
 
-		static void readKnu(std::list<double> &k_nu_temp, std::list<double> &k_nu);
+		static void readKlambda(std::list<long double> &k_nu_temp, std::list<long double> &k_nu);
 
-		static double readArate(double system_age, double &star_luminocity);
+		static long double readArate(long double system_age, long double &star_luminocity, long double &star_radius);
 
 
 };
