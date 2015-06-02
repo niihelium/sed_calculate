@@ -59,19 +59,6 @@ long double t_surf(Cell cell, long double star_luminocity) {
 	return t_surf;
 }
 
-/*long double planck(long double nu, long double t) { // t = 1 ???
-	//cout <<"in planck() - nu: " << nu << " t: " << t << endl;
-	long double B;
-	long double v1 = 2.0*h*C_sq/(pow(nu, 5.0));
-	long double v2 = h * C / (nu*K_BOLTZ * t);
-	//cout <<"in planck() - v1: " << v1 << " v2: " << v2 << endl; 
-	long double exponent_minus_one = expm1(v2);
-	//cout <<"in planck() - exponent: " << exponent_minus_one << endl;
-	B = v1 / exponent_minus_one; //Planck law
-	//cout <<"in planck() - B: " << B << endl;
-	//cin.ignore();
-	return B;	
-}*/
 long double planck(long double nu, long double t){
 	long double B;
 	long double v1 = (h2*pow(nu, 3.0))/C_sq;
@@ -80,14 +67,6 @@ long double planck(long double nu, long double t){
 	B = v1/exponent_minus_one;
 	return B;
 }
-
-/*long double planck_nu(long double nu, long double t_surf) { // t_surf = 1 ???
-	//std::cout <<"in planck() - nu: " << nu << " t_surf: " << t_surf; 
-	//std::cin.ignore();
-	long double B;
-	B = (2 * h * pow(nu, 3) / pow(C, 2))*(1 / pow(M_E, h * nu / K_BOLTZ * t_surf) - 1); //Planck law
-	return B;
-}*/
 
 
 
@@ -115,11 +94,28 @@ long double planck(long double nu, long double t){
 //888    888 88888888 888  888 888    888    .d888888 888            "888 888    .d888888 888     
 //Y88b  d88P Y8b.     888  888 Y88b.  888    888  888 888      Y88b  d88P Y88b.  888  888 888     
 // "Y8888P"   "Y8888  888  888  "Y888 888    "Y888888 888       "Y8888P"   "Y888 "Y888888 888     
-                                                                                                
+//FIXME ok                       
 long double t_eff(long double star_luminocity, long double star_radius){
-	std::cout << "t_eff(): star_luminocity=" << star_luminocity << " star_radius=" << star_radius << std::endl;
-	long double t_sub = star_luminocity/(PIl4*pow(star_radius, 2.0)*SIGMA);
-	std::cout << "t_sub " << t_sub << std::endl;
+	long double t_sub = star_luminocity/(PIl4*(star_radius*star_radius)*SIGMA);
 	long double t = pow(t_sub, 0.25);
 	return t;
+}
+
+//MISC
+
+long double unlog10(double long value)
+{
+	return pow(10, value);
+}
+
+long double interpolate_log(long double first_x, long double first_y, long double second_x, long double second_y,  long double x)
+{
+	first_y = log10(first_y);
+	second_y = log10(second_y);
+	first_x = log10(first_x);
+	second_x = log10(second_x);
+	x = log10(x);
+	long double y = ((x-first_x)*(second_y-first_y))/(second_x-first_x)+first_y;
+	//cout << "In interpolate_my: y=" << y << endl;
+	return unlog10(y);
 }

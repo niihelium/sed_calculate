@@ -57,6 +57,9 @@ void DataReader::readOuterData(long double &system_age, list<Cell> &cells_outer)
 void DataReader::readKlambda(list<long double> &k_nu_temp, list<long double> &k_nu){
 			long double k_nu_temp_t, k_nu_t;
 			ifstream file_opacities(opacities.c_str());
+			//First additional point for extrapolation
+			k_nu_temp.insert(k_nu_temp.end(), (long double)0.1);
+			k_nu.insert(k_nu.end(), (long double)5e+5);
 			while (true) {
 				file_opacities >> k_nu_temp_t >> k_nu_t;
 				k_nu_temp.insert(k_nu_temp.end(), k_nu_temp_t);

@@ -28,68 +28,64 @@ long double star_luminocity;
 long double star_radius;
 
 list<Cell> cells_outer;
+
 list<int> line_index;
 
-list<long double> k_lambda_temp;
-list<long double> k_lambda;
+//Lets calculate wavelengths before main program #################################
+long double lambda_min = 1e-1L;
+long double lambda_max = 1e+3L;
+long double precision = 100.0L;
 
-long double lambda_min = 1e-1;
-long double lambda_max = 1e+3;
-long double precision = 100.0;
+long double * wavelengths = new long double [(int)precision];
+
 long double log_lambda_min = log10(lambda_min);
 long double log_lambda_max = log10(lambda_max);
 long double delta_log_lambda = (log_lambda_max - log_lambda_min)/precision;
 
+void calculate_logscale_waves(){
+	for (int i = 0; i < precision; ++i){	
+		long double lambda = pow(10, log10(lambda_min) + delta_log_lambda*i);
+		wavelengths[i] = lambda;
+	}
+}
+//#####################################################################################
 
-long double getKlambda(long double lambda) {
+//Lets calculate opacities before main program ########################################
+list<long double> k_lambda_temp;
+list<long double> k_lambda;
+
+long double * k_lambda_precalculated = new long double [(int)precision];
+
+long double getKlambda(long double lambda){
 	//cout << "getKlambda is: " << endl;
 	int index;
-	long double Klambda, sum, min;
-	min = lambda;
+	long double Klambda;
 	for (list<long double>::iterator it = k_lambda_temp.begin(); it != k_lambda_temp.end();
 			it++) {
-		sum = abs(*it - lambda);
-		if (sum < min) {
-			min = sum;
+		if (lambda < *it){
 			index = distance(k_lambda_temp.begin(), it);
-			//cout << "Temp is: " << *it << endl;
-		}
+		}			
 	}
-	//cout << "Index is: " << index << endl;
+	
+	list<long double>::iterator it_ktemp = k_lambda_temp.begin();
+	list<long double>::iterator it_k = k_lambda.begin();
 
 	if (k_lambda.size() > index) {
-		list<long double>::iterator it = k_lambda.begin();
-		for (int i = 0; i < index; ++i)
-		{			
-			it++;
+		for (int i = 0; i < index; ++i){			
+			it_ktemp++;
+			it_k++;
 		}
-		Klambda = *it;
+		Klambda = interpolate_log(*it_ktemp, *it_k, *prev(it_ktemp, 1), *prev(it_k, 1), lambda);
 	}
-	cout << "in getKlambda Klambda: " << Klambda << " lambda: " << lambda << endl;
-	cin.ignore();
 	return Klambda;
 }
 
-long double calcOuterDiscCell(Cell cell, long double nu) {/*This function must be calculatet by micrones, not frequency*/
-	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25); //veryvery high tsurf
-	//cout << "in calcOuterDiscCell() surf_t=" << surf_t << endl;
-	long double B = planck(nu, surf_t);
-	//cout << "in calcOuterDiscCell() B=" << B << endl;
-	long double lambda = C/nu;
-	long double F = (cell.s_ / d_sq) * B* (1 - pow(M_E,-cell.sigma_ * getKlambda(lambda) * (1 / cos(gamma_incl)))); // 14 formula (planck+ t_surf)
-	return F;
+void calculate_Klambda(){
+	for (int i = 0; i < precision; ++i){
+		k_lambda_precalculated[i] = getKlambda(wavelengths[i]);
+	}
 }
-
-long double calcStar(long double nu, long double star_radius){
-	long double t = t_eff(star_luminocity, star_radius);
-	//cout << "Teff in star: " << t << endl;
-	cout<< "calcStar - t: " << t << endl;
-	long double B = planck(nu, t);
-	//cout << "Planck in star: " << B << endl;
-	long double F = ((M_PIl*pow(star_radius, 2.0))/d_sq)*B;
-	//cout << "F in star: " << F << endl;
-	return F;
-}
+//#####################################################################################
 
 void readData(){
 	cout << "Reading data" << endl;
@@ -99,23 +95,50 @@ void readData(){
 	cout << "Data reading complete" << endl;
 }
 
-void starRoutine(){
-	ofstream star_out("star_result_1.dat");
-	long double lambda = lambda_min;
-	long double  i = 0.0;
-	while (lambda <= lambda_max){
-			lambda = pow(10, log_lambda_min+i*delta_log_lambda)*0.0001;
-			long double frequency = C/lambda; // cm/s /cm = 1/s
+//Star calculation adapted to new sequence ############################################
+long double calcStar(long double nu, long double star_radius){
+	//Calculate star effective temperature by 17 equation
+	long double t = t_eff(star_luminocity, star_radius);
+	//Planck result
+	long double B = planck(nu, t);
+	//Function 16 result
+	long double F = ((M_PIl*pow(star_radius, 2.0))/d_sq)*B;
+	return B;
+}
 
+void starRoutine(){
+	//TODO I counting all in LOGSCALE so, I shouldnt draw graph in logscale should I rewrite without logscale?
+	//Assign output file for star spectre
+	ofstream star_out("result.dat");
+
+	//Assign starting spectre position at minal lambda
+	long double lambda = lambda_min;
+
+	for (int i = 0; i < precision; ++i){
+			//WTF?? Something related to logariphmic scale
+			lambda = wavelengths[i];
+			//Convert length to freq
+			long double frequency = C/(lambda*0.0001); // cm/s /cm = 1/s
+			//Calculation result
 			long double counting_result = calcStar(frequency, star_radius);
+			//Multiply by freq for graph value relation
 			counting_result = counting_result*frequency;
 			cout << "counting_result in star: "<< counting_result << endl;
 			//	cin.ignore();
+			// Check is result really exist not random and not inf
 			if (counting_result == counting_result && !std::isinf(counting_result))
-				star_out << lambda << " " << frequency << " " << counting_result << endl;		
-			++i;		
+				star_out << lambda << " " << frequency << " " << counting_result << endl;			
 	}
 	star_out.close();
+}
+//#####################################################################################
+
+//Looks like outer disk calculation adapted to new sequence ###########################
+long double calcOuterDiscCell(Cell cell, long double nu, int n) {
+	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25);
+	long double B = planck(nu, surf_t);
+	long double F = (cell.s_ / d_sq) * B* (1 - pow(M_E,-cell.sigma_ * k_lambda_precalculated[n] * (1 / cos(gamma_incl)))); // 14 formula (planck+ t_surf)
+	return F;
 }
 
 void discOutputRoutine(long double spectre[]){
@@ -123,50 +146,51 @@ void discOutputRoutine(long double spectre[]){
 	if(fout.is_open()){
     	cout << "File Opened successfully. Writing data from array to file" << endl;
 
-		for(int i = 0; i < precision; i++)
-		{
-      		fout << spectre[i] << endl; //writing ith character of array in the file      		
+		for(int i = 0; i < precision; ++i){
+      		fout << wavelengths[i] << " " << spectre[i] << endl; //writing ith character of array in the file      		
 		}
     	cout << "Array data successfully saved into the file result.dat" << endl;
 	}
 }
 
 void discRoutine(long double spectre[] ){
-	cout << "First cell: "  << cells_outer.front().line_index_ << " Last cell: " << cells_outer.back().line_index_ << endl;
-	int spectre_pos = 0.0;
-	for (Cell & cell : cells_outer) {
+	//parallel_for()
+	for (Cell & cell : cells_outer){
 		cout << cell.line_index_ << "\r" << flush;
-		//printf("\r %c", cell.line_index_);
-		spectre_pos = 0.0;
 		long double lambda = lambda_min;
-		while (lambda < lambda_max){
-			lambda = pow(10, log_lambda_min+spectre_pos*delta_log_lambda)*0.0001;
-			long double frequency = C/lambda; // cm/s /cm = 1/s
+		for (int i = 0; i < precision; ++i){
+			lambda = wavelengths[i];
+			long double frequency = C/(lambda*0.0001); // cm/s /cm = 1/s
 
-			long double counting_result =calcOuterDiscCell(cell, frequency);
+			long double counting_result = calcOuterDiscCell(cell, frequency, i);
 			//cout << "discRoutine(): counting_result=" << counting_result << endl;
-			//if (counting_result == counting_result && !std::isinf(counting_result)){
-				spectre[spectre_pos] = spectre[spectre_pos] + counting_result;
-				//cout << "discRoutine(): spectre[spectre_pos]=" << spectre[spectre_pos] << " spectre_pos=" << spectre_pos <<endl;
-			//}
-			++spectre_pos;
+			if (counting_result == counting_result && !std::isinf(counting_result)){
+				spectre[i] = spectre[i] + counting_result;
+			}
 		}		
 	}
 	discOutputRoutine(spectre);
 }
-
-
-
-int main(int argc, char **argv) {
+//#####################################################################################
+void preparation(){
+	//Reading all nesessary data from .dat files
 	readData();
+	calculate_logscale_waves();
+	calculate_Klambda();
+}
 
+int main(int argc, char **argv){
+	preparation();
+
+	//Initialising output spectre and nullify it
 	long double spectre[(int)precision];
-	for (int i = 0; i < precision; ++i)
-	{
+	for (int i = 0; i < precision; ++i){
 		spectre[i] = 0;
 	}
 
+	//All actions related to star
 	//starRoutine();
+	//All actions related to outer disc
 	discRoutine(spectre);
 	
 	
