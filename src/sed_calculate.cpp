@@ -60,10 +60,19 @@ long double getKlambda(long double lambda){
 	//cout << "getKlambda is: " << endl;
 	int index;
 	long double Klambda;
+	bool accurate = false;
 	for (list<long double>::iterator it = k_lambda_temp.begin(); it != k_lambda_temp.end();
 			it++) {
-		if (lambda < *it){
+
+		if (double_equals(lambda, *it, 0.00001L)){
+			accurate = true;
 			index = distance(k_lambda_temp.begin(), it);
+			break;
+		}
+		else if(lambda < (*it)){
+			accurate = false;
+			index = distance(k_lambda_temp.begin(), it);
+			break;
 		}			
 	}
 	
@@ -75,15 +84,23 @@ long double getKlambda(long double lambda){
 			it_ktemp++;
 			it_k++;
 		}
-		Klambda = interpolate_log(*it_ktemp, *it_k, *prev(it_ktemp, 1), *prev(it_k, 1), lambda);
+		if (accurate){
+			Klambda = *it_k;
+		}else{
+			Klambda = interpolate_log(*it_ktemp, *it_k, *prev(it_ktemp, 1), *prev(it_k, 1), lambda);
+		}
 	}
+
 	return Klambda;
 }
 
 void calculate_Klambda(){
+	ofstream fout("opacities_extra.dat");
 	for (int i = 0; i < precision; ++i){
 		k_lambda_precalculated[i] = getKlambda(wavelengths[i]);
+		fout << wavelengths[i] << " " << k_lambda_precalculated[i] << endl;
 	}
+	fout.close();
 }
 //#####################################################################################
 

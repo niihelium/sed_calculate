@@ -119,3 +119,8 @@ long double interpolate_log(long double first_x, long double first_y, long doubl
 	//cout << "In interpolate_my: y=" << y << endl;
 	return unlog10(y);
 }
+
+bool double_equals(long double a, long double b, long double epsilon)
+{
+    return fabs(a - b) < epsilon;
+} 

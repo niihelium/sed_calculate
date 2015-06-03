@@ -14,6 +14,6 @@ long double t_eff(long double star_luminocity, long double star_radius);
 
 long double unlog10(double long value);
 long double interpolate_log(long double first_x, long double first_y, long double second_x, long double second_y,  long double x);
-
+bool double_equals(long double a, long double b, long double epsilon);
 
 #endif
