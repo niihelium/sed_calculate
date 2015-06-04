@@ -37,12 +37,12 @@ void DataReader::readOuterData(long double &system_age, list<Cell> &cells_outer)
 
 			while (true) {
 				++curr_line_index;				
-				file_grid >> rt >> phit >> St;
-				file_var >> sigmat >> t_midplane >> tau >> dumb >> dumb >> dumb >> dumb;
-				//Convert to SGS 
-				rt = rt*3.08567758128e+18;
-				St = St*3.08567758128e+18;
+				file_grid >> rt >> phit >> St; //All well
+				file_var >> sigmat >> t_midplane >> tau >> dumb >> dumb >> dumb >> dumb; //All well
 				if (St != 0 && rt >= 0.970332E-04) { //Reading line if S != 0 and r >= 20 AU
+					//Convert to SGS 
+					rt = rt*3.08567758128e+18;
+					St = St*3.08567758128e+18;
 					cells_outer.insert(cells_outer.end(),
 							Cell(curr_line_index, rt, phit, St, sigmat, t_midplane, tau));
 				}
@@ -53,6 +53,8 @@ void DataReader::readOuterData(long double &system_age, list<Cell> &cells_outer)
 			file_var.close();
 			cout << "Reading outer data done" << endl;
 }
+
+
 
 void DataReader::readKlambda(list<long double> &k_nu_temp, list<long double> &k_nu){
 			long double k_nu_temp_t, k_nu_t;
@@ -80,7 +82,7 @@ long double DataReader::readArate(long double system_age, long double &star_lumi
 	while (getline(file_Arate, line)){
 		++curr_line_index;
 	    istringstream iss(line);
-	    if (!(iss >> age_t >> dumb >> L_accr >> L_photo >> dumb >> dumb >> dumb >> dumb >> star_radius)) break; // error
+	    if (!(iss >> age_t >> dumb >> L_accr >> L_photo >> dumb >> dumb >> dumb >> dumb >> star_radius)) break; // Looks good
 
 	    star_radius = star_radius * sun_radius;
 	    diff = abs(age_t - system_age);
@@ -94,7 +96,5 @@ long double DataReader::readArate(long double system_age, long double &star_lumi
 		}
 
 	}
-/*	cout << "readArate(): star_luminocity=" << L_full << endl;
-	cin.ignore();*/
 	return L_full;
 }

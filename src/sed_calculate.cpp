@@ -32,9 +32,9 @@ list<Cell> cells_outer;
 list<int> line_index;
 
 //Lets calculate wavelengths before main program #################################
-long double lambda_min = 1e-1L;
-long double lambda_max = 1e+3L;
-long double precision = 100.0L;
+long double lambda_min = 1e-1l;
+long double lambda_max = 1e+3l;
+long double precision = 100.0l;
 
 long double * wavelengths = new long double [(int)precision];
 
@@ -64,7 +64,7 @@ long double getKlambda(long double lambda){
 	for (list<long double>::iterator it = k_lambda_temp.begin(); it != k_lambda_temp.end();
 			it++) {
 
-		if (double_equals(lambda, *it, 0.00001L)){
+		if (double_equals(lambda, *it, 0.00001l)){
 			accurate = true;
 			index = distance(k_lambda_temp.begin(), it);
 			break;
@@ -113,36 +113,37 @@ void readData(){
 }
 
 //Star calculation adapted to new sequence ############################################
-long double calcStar(long double nu, long double star_radius){
+long double calcStar(long double nu, long double star_radius, long double t){
 	//Calculate star effective temperature by 17 equation
-	long double t = t_eff(star_luminocity, star_radius);
 	//Planck result
 	long double B = planck(nu, t);
 	//Function 16 result
-	long double F = ((M_PIl*pow(star_radius, 2.0))/d_sq)*B;
-	return B;
+	long double F = ((M_PIl*(star_radius*star_radius))/d_sq)*B;
+	return F;
 }
 
 void starRoutine(){
 	//TODO I counting all in LOGSCALE so, I shouldnt draw graph in logscale should I rewrite without logscale?
 	//Assign output file for star spectre
-	ofstream star_out("result.dat");
-
+	ofstream star_out("star_result.dat");
 	//Assign starting spectre position at minal lambda
 	long double lambda = lambda_min;
-
+	long double t = t_eff(star_luminocity, star_radius);
 	for (int i = 0; i < precision; ++i){
 			//WTF?? Something related to logariphmic scale
-			lambda = wavelengths[i];
+			lambda = wavelengths[i]; //Lambda in micrones = OK
 			//Convert length to freq
-			long double frequency = C/(lambda*0.0001); // cm/s /cm = 1/s
+			long double frequency = C/(lambda*0.0001l); // cm/s /cm = 1/s Freq in Hz = OK
+
+			//cin.ignore();
 			//Calculation result
-			long double counting_result = calcStar(frequency, star_radius);
+			long double counting_result = calcStar(frequency, star_radius, t);
 			//Multiply by freq for graph value relation
 			counting_result = counting_result*frequency;
-			cout << "counting_result in star: "<< counting_result << endl;
 			//	cin.ignore();
 			// Check is result really exist not random and not inf
+			if (counting_result < 1e-11l) //Looks like it's right
+				counting_result = 0;
 			if (counting_result == counting_result && !std::isinf(counting_result))
 				star_out << lambda << " " << frequency << " " << counting_result << endl;			
 	}
@@ -151,20 +152,28 @@ void starRoutine(){
 //#####################################################################################
 
 //Looks like outer disk calculation adapted to new sequence ###########################
+
+ofstream tfout("temps_result.dat");
+
 long double calcOuterDiscCell(Cell cell, long double nu, int n) {
-	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25);
+
+	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25l);
 	long double B = planck(nu, surf_t);
-	long double F = (cell.s_ / d_sq) * B* (1 - pow(M_E,-cell.sigma_ * k_lambda_precalculated[n] * (1 / cos(gamma_incl)))); // 14 formula (planck+ t_surf)
+	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);
+	cout << "cell.sigma_=" << cell.sigma_ << "k_lambda_precalculated[n]=" << k_lambda_precalculated[n] << endl;
+	cin.ignore();
+	long double F = (cell.s_ / d_sq) * B* (1.0l - exp(-cell.sigma_ * k_lambda_precalculated[n] * (one_div_cos_gamma))); // 14 formula (planck+ t_surf)
 	return F;
 }
 
 void discOutputRoutine(long double spectre[]){
-	ofstream fout("result.dat");
+	ofstream fout("outer_result.dat");
 	if(fout.is_open()){
     	cout << "File Opened successfully. Writing data from array to file" << endl;
 
 		for(int i = 0; i < precision; ++i){
       		fout << wavelengths[i] << " " << spectre[i] << endl; //writing ith character of array in the file      		
+      		//fout << wavelengths[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
 		}
     	cout << "Array data successfully saved into the file result.dat" << endl;
 	}

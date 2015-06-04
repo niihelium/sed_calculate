@@ -18,10 +18,10 @@
  using namespace std;
 
  long double expm1(long double x){
-        if (fabs(x) < 1e-5)
-                return x + 0.5*x*x;
+        if (fabs(x) < 1e-5l)
+                return x + 0.5l*x*x;
         else
-                return exp(x) - 1.0;
+                return exp(x) - 1.0l;
 }
 
 
@@ -37,22 +37,24 @@
 
 long double F_c(long double tau) {
 	long double F_c;
-	F_c =(2.0 + 20.0*(atan(tau)))/(PIl3);
+	F_c =2.0l + (20.0l*(atan(tau)))/(PIl3);
+	cout << "theta=" << tau << endl;
+	cin.ignore();
 	return F_c;
 }
 
 long double F_irr(long double star_luminocity, long double r) {
 	long double F_irr;
-	F_irr = (star_luminocity / (PIl4 * pow(r, 2.0))) * 0.5; //cos(gamma_irr); //eq 8 cos(gamma_irr) = 0.05 L/star_luminocity = Arate 3+4
+	F_irr = (star_luminocity / (PIl4 *r*r)) * 0.5l; //cos(gamma_irr); //eq 8 cos(gamma_irr) = 0.05 L/star_luminocity = Arate 3+4
 	return F_irr;
 }
 
 long double t_surf(Cell cell, long double star_luminocity) {
 	//std::cout << star_luminocity;
 	//std::cin.ignore();
-	long double v1 = 0.5 * F_c(cell.tau_) * pow(cell.T_midplane_, 4) * (1.0 / 1.0 + cell.tau_);
+	long double v1 = 0.5l * F_c(cell.tau_) * pow(cell.T_midplane_, 4l) * (1.0l / 1.0l + cell.tau_);
 	//cout << "t_surf() v1=" << v1 << endl;
-	long double v2 = pow(t_background, 4) // 15 formula
+	long double v2 = pow(t_background, 4.0l) // 15 formula
 			+ F_irr(star_luminocity, cell.r_) / SIGMA;
 	//cout << "t_surf() v2=" << v2 << endl << endl;
 	long double t_surf = v1 + v2;
@@ -61,7 +63,7 @@ long double t_surf(Cell cell, long double star_luminocity) {
 
 long double planck(long double nu, long double t){
 	long double B;
-	long double v1 = (h2*pow(nu, 3.0))/C_sq;
+	long double v1 = (h2*pow(nu, 3.0l))/C_sq;
 	long double v2 = h*nu/(K_BOLTZ*t);
 	long double exponent_minus_one = expm1(v2);
 	B = v1/exponent_minus_one;
@@ -97,7 +99,7 @@ long double planck(long double nu, long double t){
 //FIXME ok                       
 long double t_eff(long double star_luminocity, long double star_radius){
 	long double t_sub = star_luminocity/(PIl4*(star_radius*star_radius)*SIGMA);
-	long double t = pow(t_sub, 0.25);
+	long double t = pow(t_sub, 0.25l);
 	return t;
 }
 
@@ -105,7 +107,7 @@ long double t_eff(long double star_luminocity, long double star_radius){
 
 long double unlog10(double long value)
 {
-	return pow(10, value);
+	return pow(10.0l, value);
 }
 
 long double interpolate_log(long double first_x, long double first_y, long double second_x, long double second_y,  long double x)
