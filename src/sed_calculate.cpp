@@ -160,8 +160,6 @@ long double calcOuterDiscCell(Cell cell, long double nu, int n) {
 	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25l);
 	long double B = planck(nu, surf_t);
 	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);
-	cout << "cell.sigma_=" << cell.sigma_ << "k_lambda_precalculated[n]=" << k_lambda_precalculated[n] << endl;
-	cin.ignore();
 	long double F = (cell.s_ / d_sq) * B* (1.0l - exp(-cell.sigma_ * k_lambda_precalculated[n] * (one_div_cos_gamma))); // 14 formula (planck+ t_surf)
 	return F;
 }
@@ -191,7 +189,7 @@ void discRoutine(long double spectre[] ){
 			long double counting_result = calcOuterDiscCell(cell, frequency, i);
 			//cout << "discRoutine(): counting_result=" << counting_result << endl;
 			if (counting_result == counting_result && !std::isinf(counting_result)){
-				spectre[i] = spectre[i] + counting_result;
+				spectre[i] = spectre[i] + counting_result*frequency;
 			}
 		}		
 	}

@@ -38,8 +38,6 @@
 long double F_c(long double tau) {
 	long double F_c;
 	F_c =2.0l + (20.0l*(atan(tau)))/(PIl3);
-	cout << "theta=" << tau << endl;
-	cin.ignore();
 	return F_c;
 }
 
