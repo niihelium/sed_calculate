@@ -56,6 +56,13 @@ long double t_surf(Cell cell, long double star_luminocity) {
 			+ F_irr(star_luminocity, cell.r_) / SIGMA;
 	//cout << "t_surf() v2=" << v2 << endl << endl;
 	long double t_surf = v1 + v2;
+
+	/*if(t_surf >= pow(500.0l, 4)){
+		cout << " in t_surf(): t_surf=" << pow(t_surf, 0.25l) << endl;
+		cout << " in t_surf(): t_surf=" << t_surf << " v1=" << v1 << " v2=" << v2 << endl;
+		cin.ignore();
+	}*/
+
 	return t_surf;
 }
 

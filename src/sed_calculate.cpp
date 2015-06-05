@@ -21,6 +21,8 @@ using namespace std;
 
 int lines_count;
 
+int cell_num = 0;
+
 //Calculation variables
 //varXXX.dat
 long double system_age;
@@ -30,6 +32,11 @@ long double star_radius;
 list<Cell> cells_outer;
 
 list<int> line_index;
+
+list<long double> cell_t_phi_0;
+list<long double> cell_t_phi_90;
+list<long double> cell_t_phi_180;
+list<long double> cell_t_phi_270;
 
 //Lets calculate wavelengths before main program #################################
 long double lambda_min = 1e-1l;
@@ -90,7 +97,6 @@ long double getKlambda(long double lambda){
 			Klambda = interpolate_log(*it_ktemp, *it_k, *prev(it_ktemp, 1), *prev(it_k, 1), lambda);
 		}
 	}
-
 	return Klambda;
 }
 
@@ -115,6 +121,7 @@ void readData(){
 //Star calculation adapted to new sequence ############################################
 long double calcStar(long double nu, long double star_radius, long double t){
 	//Calculate star effective temperature by 17 equation
+	long double t = t_eff(star_luminocity, star_radius);
 	//Planck result
 	long double B = planck(nu, t);
 	//Function 16 result
@@ -153,20 +160,35 @@ void starRoutine(){
 
 //Looks like outer disk calculation adapted to new sequence ###########################
 
-ofstream tfout("temps_result.dat");
+
 
 long double calcOuterDiscCell(Cell cell, long double nu, int n) {
 	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25l);
 
+	if (double_equals(cell.phi_, 0.613592E-02l, 0.00001) && cell.line_index_ != cell_num){ //0.3514336
+        cell_t_phi_0.insert(cell_t_phi_0.end(), surf_t);
+        cell_num = cell.line_index_;
+	}else if (double_equals(cell.phi_, 0.157693E+01l, 0.00001) && cell.line_index_ != cell_num){ //90.3514336
+        cell_t_phi_90.insert(cell_t_phi_90.end(), surf_t);
+        cell_num = cell.line_index_;
+	}else if (double_equals(cell.phi_, 0.314773E+01, 0.00001) && cell.line_index_ != cell_num){ //180.351644
+		cell_t_phi_180.insert(cell_t_phi_180.end(), surf_t);
+		cell_num = cell.line_index_;
+	}else if (double_equals(cell.phi_, 0.471852E+01, 0.00001) && cell.line_index_ != cell_num){ //270.351282
+       	cell_t_phi_270.insert(cell_t_phi_270.end(), surf_t);		
+       	cell_num = cell.line_index_;
+	}
+
 	
-		if(surf_t >= 900.0l){
-			cout << "surf_t=" << surf_t << endl;
-			cin.ignore();
-		}
+	//long double surf_t = 200.l;
+	//cout << "in calcOuterDiscCell(): surf_t=" << surf_t << endl;
+	//cin.ignore();
+	
+		
 	long double B = planck(nu, surf_t);
 	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);
 	//TESTING
-	long double cell_sigma_k_lambda = -(cell.sigma_*k_lambda_precalculated[n])/100.0l;
+	long double cell_sigma_k_lambda = -((cell.sigma_/100.0l)*k_lambda_precalculated[n]);
 	long double t1 = exp(cell_sigma_k_lambda * (one_div_cos_gamma));
 	/*cout << scientific;
 	cout.precision(6);
@@ -179,16 +201,38 @@ long double calcOuterDiscCell(Cell cell, long double nu, int n) {
 
 void discOutputRoutine(long double spectre[]){
 	ofstream fout("outer_result.dat");
+	ofstream fout0("cell_t_phi_0.dat");
+	ofstream fout90("cell_t_phi_90.dat");
+	ofstream fout180("cell_t_phi_180.dat");
+	ofstream fout270("cell_t_phi_270.dat");
 	if(fout.is_open()){
     	cout << "File Opened successfully. Writing data from array to file" << endl;
 
 		for(int i = 0; i < precision; ++i){
-      		//fout << wavelengths[i] << " " << spectre[i] << endl; //writing ith character of array in the file      		
-      		fout << wavelengths[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
+      		fout << wavelengths[i] << " " << spectre[i] << endl; //writing ith character of array in the file      		
+      		//fout << wavelengths[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
 		}
+
     	cout << "Array data successfully saved into the file result.dat" << endl;
 	}
+	for (long double  & t : cell_t_phi_0){
+		fout0 << t << endl;
+	}
+	for (long double  & t : cell_t_phi_90){
+		fout90 << t << endl;
+	}
+	for (long double  & t : cell_t_phi_180){
+		fout180 << t << endl;
+	}
+	for (long double  & t : cell_t_phi_270){
+		fout270 << t << endl;
+	}
 	fout.close();
+	fout90.close();
+	fout180.close();
+	fout270.close();
+	fout0.close();
+	
 }
 
 void discRoutine(long double spectre[] ){

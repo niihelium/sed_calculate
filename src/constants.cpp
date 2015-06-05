@@ -10,7 +10,7 @@
 static const long double SIGMA = 5.67040040e-05l; //Stefan Boltzmann constant, erg*cm-2*s-1*K-4
 static const long double K_BOLTZ = 1.38064881e-16l; //Boltzmann constant, erg*K
 static const long double h = 6.62606957e-27l; //Plank constant, erg*s
-static const long double t_background = 1.00000000e+01l; //10 k
+static const long double t_background = 1.0e+01l; //10 k
 static const long double C = 2.99792458e+10l; //light speed
 static const long double C_sq = C*C; //light speed^2
 static const long double sun_radius = 6.96e+10l; //sun radius in cm
