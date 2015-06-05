@@ -50,7 +50,7 @@ long double F_irr(long double star_luminocity, long double r) {
 long double t_surf(Cell cell, long double star_luminocity) {
 	//std::cout << star_luminocity;
 	//std::cin.ignore();
-	long double v1 = 0.5l * F_c(cell.tau_) * pow(cell.T_midplane_, 4l) * (1.0l / 1.0l + cell.tau_);
+	long double v1 = 0.5l * F_c(cell.tau_) * pow(cell.T_midplane_, 4.0l) * (1.0l / 1.0l + cell.tau_);
 	//cout << "t_surf() v1=" << v1 << endl;
 	long double v2 = pow(t_background, 4.0l) // 15 formula
 			+ F_irr(star_luminocity, cell.r_) / SIGMA;

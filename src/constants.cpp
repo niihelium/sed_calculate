@@ -17,9 +17,9 @@ static const long double sun_radius = 6.96e+10l; //sun radius in cm
 static const long double mkm_to_hz =	2.99792458e+14l;// 1 mkm = mkm_to_hz Hz
 
 //functions
-static const long double PIl3 = 3.0*M_PIl;
-static const long double PIl4 = 4.0*M_PIl;
-static const long double h2 = 2.0*h;
+static const long double PIl3 = 3.0l*M_PIl;
+static const long double PIl4 = 4.0l*M_PIl;
+static const long double h2 = 2.0l*h;
 
 //sed_calculate
 static const long double gamma_incl = 0.0l;

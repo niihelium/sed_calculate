@@ -156,11 +156,24 @@ void starRoutine(){
 ofstream tfout("temps_result.dat");
 
 long double calcOuterDiscCell(Cell cell, long double nu, int n) {
-
 	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25l);
+
+	
+		if(surf_t >= 900.0l){
+			cout << "surf_t=" << surf_t << endl;
+			cin.ignore();
+		}
 	long double B = planck(nu, surf_t);
 	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);
-	long double F = (cell.s_ / d_sq) * B* (1.0l - exp(-cell.sigma_ * k_lambda_precalculated[n] * (one_div_cos_gamma))); // 14 formula (planck+ t_surf)
+	//TESTING
+	long double cell_sigma_k_lambda = -(cell.sigma_*k_lambda_precalculated[n])/100.0l;
+	long double t1 = exp(cell_sigma_k_lambda * (one_div_cos_gamma));
+	/*cout << scientific;
+	cout.precision(6);
+	cout << "cell_sigma=" << cell_sigma << " t1=" << t1 << endl;
+	cin.ignore();*/
+	//TESTING
+	long double F = (cell.s_ / d_sq) * B* (1.0l - t1); // 14 formula (planck+ t_surf)
 	return F;
 }
 
@@ -170,11 +183,12 @@ void discOutputRoutine(long double spectre[]){
     	cout << "File Opened successfully. Writing data from array to file" << endl;
 
 		for(int i = 0; i < precision; ++i){
-      		fout << wavelengths[i] << " " << spectre[i] << endl; //writing ith character of array in the file      		
-      		//fout << wavelengths[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
+      		//fout << wavelengths[i] << " " << spectre[i] << endl; //writing ith character of array in the file      		
+      		fout << wavelengths[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
 		}
     	cout << "Array data successfully saved into the file result.dat" << endl;
 	}
+	fout.close();
 }
 
 void discRoutine(long double spectre[] ){
