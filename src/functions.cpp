@@ -36,33 +36,37 @@
 
 
 long double F_c(long double tau) {
-	long double F_c;
-	F_c =2.0l + (20.0l*(atan(tau)))/(PIl3);
+	long double F_c =2.0l + (20.0l*atan(tau))/(PIl3);
 	return F_c;
 }
 
 long double F_irr(long double star_luminocity, long double r) {
-	long double F_irr;
-	F_irr = (star_luminocity / (PIl4 *r*r)) * 0.5l; //cos(gamma_irr); //eq 8 cos(gamma_irr) = 0.05 L/star_luminocity = Arate 3+4
+	long double F_irr = (star_luminocity / (PIl4 *r*r)) * 0.5l; //cos(gamma_irr); //eq 8 cos(gamma_irr) = 0.05 L/star_luminocity = Arate 3+4
 	return F_irr;
 }
 
 long double t_surf(Cell cell, long double star_luminocity) {
 	//std::cout << star_luminocity;
 	//std::cin.ignore();
-	long double v1 = 0.5l * F_c(cell.tau_) * pow(cell.T_midplane_, 4.0l) * (1.0l / 1.0l + cell.tau_);
-	//cout << "t_surf() v1=" << v1 << endl;
-	long double v2 = pow(t_background, 4.0l) // 15 formula
-			+ F_irr(star_luminocity, cell.r_) / SIGMA;
+	long double Fc05 = 0.5l *F_c(cell.tau_);//ok
+	long double tmp4 = pow(cell.T_midplane_, 4.0l); //ok //ORLY???????????????????????????????//
+	long double d1tau = (1.0l / (1.0l + cell.tau_)); //ok
+	
+	long double v1 = Fc05 * tmp4 * d1tau;
+	/*cout << "v1=" << v1 << endl;
+	cin.ignore();*/
+	long double v2 = pow(t_background, 4.0l); // 15 formula
+	long double v3 = F_irr(star_luminocity, cell.r_) / SIGMA;
 	//cout << "t_surf() v2=" << v2 << endl << endl;
-	long double t_surf = v1 + v2;
+	long double t_surf = v1 + v2 + v3;
 
 	/*if(t_surf >= pow(500.0l, 4)){
 		cout << " in t_surf(): t_surf=" << pow(t_surf, 0.25l) << endl;
 		cout << " in t_surf(): t_surf=" << t_surf << " v1=" << v1 << " v2=" << v2 << endl;
 		cin.ignore();
 	}*/
-
+	/*cout << "t_surf=" << pow(t_surf, 0.25l) << endl;
+	cin.ignore();*/
 	return t_surf;
 }
 
@@ -93,12 +97,14 @@ long double omega(long double r){
 }
 
 long double nu_sigma(long double a_rate, long double r, long double star_radius){
-	long double nu_sigma = (a_rate/PIl3)*(1.0l - pow((star_radius/r), 0.5l));
+	long double nu_sigma = (a_rate/PIl3)*(1.0l - pow((star_radius/r), 0.25l));
+	//cout << "nu_sigma=" << nu_sigma << endl;
+	//cin.ignore();
 	return nu_sigma;
 }
 
 long double t_surf_in(Cell cell, long double star_luminocity, long double star_radius, long double a_rate) {
-	long double v1 = (9.0l/SIGMA*8.0l)*pow(omega(cell.r_), 2.0l);//*nu_sigma(a_rate, cell.r_, star_radius);
+	long double v1 = (9.0l/SIGMA*8.0l)*pow(omega(cell.r_), 2.0l)*nu_sigma(a_rate, cell.r_, star_radius);
 	long double t_surf_in = v1 + pow(t_background, 4.0l) + F_irr(star_luminocity, cell.r_)/SIGMA;
 	return t_surf_in;
 }

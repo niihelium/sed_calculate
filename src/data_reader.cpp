@@ -53,7 +53,8 @@ void DataReader::readInnerData(long double &system_age, list<Cell> &cells_inner)
 
 void DataReader::readOuterData(long double &system_age, list<Cell> &cells_outer){
 	//grid.dat
-	long double rt, phit, St;
+	long double rt = 0;	
+	long double phit, St;
     //varXXX.dat
 	long double sigmat, t_midplane, tau;
 	int curr_line_index = 0;
@@ -65,20 +66,23 @@ void DataReader::readOuterData(long double &system_age, list<Cell> &cells_outer)
 	//cout << scientific;
 	//cout << scientific << system_age << endl;
 
-	while (true) {
+	while (!file_grid.eof() || !file_var.eof()) {
 		++curr_line_index;				
 		file_grid >> rt >> phit >> St; //All well
 		file_var >> sigmat >> t_midplane >> tau >> dumb >> dumb >> dumb >> dumb; //All well
-		if (St != 0 && rt >= 0.970332E-04) { //Reading line if S != 0 and r >= 20 AU
+		if (St != 0 && rt >= 0.969627362e-4l && rt < 0.242406841e-2l) { //Reading line if S != 0 and r >= 20 AU
+			
+		//cout << curr_line_index << " rt=" << rt << " phit=" << phit << " St=" << St << endl;
+		//cin.ignore();
 			//Convert to SGS 
 			rt = rt*3.08567758128e+18l;
 			St = St*9.52140614e+36l;
+			
 			cells_outer.insert(cells_outer.end(),
 					Cell(curr_line_index, rt, phit, St, sigmat, t_midplane, tau));
-		}
-		if (file_grid.eof() || file_var.eof())
-			break;
+		} 
 	}
+
 	file_grid.close();
 	file_var.close();
 	cout << "Reading outer data done" << endl;
@@ -121,8 +125,8 @@ long double DataReader::readArate(long double system_age, long double &star_lumi
 			//star_radius = star_radius * sun_radius;
 			star_radius = star_radius*sun_radius;
 
-			a_rate = a_rate*1.99e+33l;
-
+			a_rate = a_rate*1.99e+33l;// in year
+			a_rate = a_rate/3.15569e+7l; // in second
 	    	L_full = L_accr + L_photo;
 	    	L_full = L_full*3.827e+33;
 	    	star_luminocity = L_full;

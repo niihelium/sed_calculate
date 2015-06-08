@@ -35,10 +35,10 @@ list<Cell> cells_inner;
 
 list<int> line_index;
 
-/*list<long double> cell_t_phi_0;
+list<long double> cell_t_phi_0;
 list<long double> cell_t_phi_90;
 list<long double> cell_t_phi_180;
-list<long double> cell_t_phi_270;*/
+list<long double> cell_t_phi_270;
 
 //Lets calculate wavelengths before main program #################################
 long double lambda_min = 1e-1l;
@@ -51,7 +51,7 @@ long double log_lambda_min = log10(lambda_min);
 long double log_lambda_max = log10(lambda_max);
 long double delta_log_lambda = (log_lambda_max - log_lambda_min)/precision;
 
-void calculate_logscale_waves(){
+void calculateLogscaleWaves(){
 	for (int i = 0; i < precision; ++i){	
 		long double lambda = pow(10, log10(lambda_min) + delta_log_lambda*i);
 		wavelengths[i] = lambda;
@@ -102,7 +102,7 @@ long double getKlambda(long double lambda){
 	return Klambda;
 }
 
-void calculate_Klambda(){
+void calculateKlambda(){
 	ofstream fout("opacities_extra.dat");
 	for (int i = 0; i < precision; ++i){
 		k_lambda_precalculated[i] = getKlambda(wavelengths[i]);
@@ -194,6 +194,20 @@ long double calcOuterDiscCell(Cell cell, long double nu, int n) {
 long double calcInnerDiscCell(Cell cell, long double nu, int n) {
 	long double surf_t = pow(t_surf_in(cell, star_luminocity, star_radius, a_rate), 0.25l);
 
+	/*if (double_equals(cell.phi_, 0.613592E-02l, 0.00001) && cell.line_index_ != cell_num){ //0.3514336
+        cell_t_phi_0.insert(cell_t_phi_0.end(), surf_t);
+        cell_num = cell.line_index_;
+	}else if (double_equals(cell.phi_, 0.157693E+01l, 0.00001) && cell.line_index_ != cell_num){ //90.3514336
+        cell_t_phi_90.insert(cell_t_phi_90.end(), surf_t);
+        cell_num = cell.line_index_;
+	}else if (double_equals(cell.phi_, 0.314773E+01, 0.00001) && cell.line_index_ != cell_num){ //180.351644
+		cell_t_phi_180.insert(cell_t_phi_180.end(), surf_t);
+		cell_num = cell.line_index_;
+	}else if (double_equals(cell.phi_, 0.471852E+01, 0.00001) && cell.line_index_ != cell_num){ //270.351282
+       	cell_t_phi_270.insert(cell_t_phi_270.end(), surf_t);		
+       	cell_num = cell.line_index_;
+	}*/
+
 	long double B = planck(nu, surf_t);
 	//TESTING
 	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);	
@@ -212,10 +226,10 @@ void discOutputRoutine(long double spectre_out[], long double spectre_in[]){
 	ofstream fout_out("outer_result.dat");
 	ofstream fout_in("inner_result.dat");
 
-	ofstream fout0("cell_t_phi_0.dat");
+	/*ofstream fout0("cell_t_phi_0.dat");
 	ofstream fout90("cell_t_phi_90.dat");
 	ofstream fout180("cell_t_phi_180.dat");
-	ofstream fout270("cell_t_phi_270.dat");
+	ofstream fout270("cell_t_phi_270.dat");*/
 	if(fout_out.is_open() && fout_in.is_open()){
     	cout << "File Opened successfully. Writing data from array to file" << endl;
 
@@ -246,12 +260,10 @@ void discOutputRoutine(long double spectre_out[], long double spectre_in[]){
 	fout0.close();*/
 
 	fout_out.close();
-	fout_in.close();
-	
+	fout_in.close();	
 }
 
-void discRoutine(long double spectre_out[], long double spectre_in[]){
-	//parallel_for()
+void innerCycle(long double spectre_in[]){
 	for (Cell & cell : cells_inner)
 	{
 		cout << cell.line_index_ << "\r" << flush;
@@ -267,8 +279,10 @@ void discRoutine(long double spectre_out[], long double spectre_in[]){
 			}
 		}
 	}
+}
 
-	/*for (Cell & cell : cells_outer){
+void outerCycle(long double spectre_out[]){
+	for (Cell & cell : cells_outer){
 		cout << cell.line_index_ << "\r" << flush;
 		long double lambda = lambda_min;
 		for (int i = 0; i < precision; ++i){
@@ -281,16 +295,39 @@ void discRoutine(long double spectre_out[], long double spectre_in[]){
 				spectre_out[i] = spectre_out[i] + counting_result*frequency;
 			}
 		}		
-	}*/
+	}
+
+
+}
+
+void discRoutine(long double spectre_out[], long double spectre_in[]){
+	//parallel_for()
+	innerCycle(spectre_in);
+	outerCycle(spectre_out);	
 
 	discOutputRoutine(spectre_out, spectre_in);
 }
 //#####################################################################################
+
+//FUCK THIS ARCHITECTURE ##############################################################
+
+void plotTMp(){
+	ofstream fout("plot_t_mp.dat");
+	for (Cell & cell : cells_outer){
+		long double x = cell.r_ * cos(cell.phi_*(180.0l/M_PIl))*6.68458712e-14;
+		long double y = cell.r_ * sin(cell.phi_*(180.0l/M_PIl))*6.68458712e-14;
+		long double z = cell.T_midplane_;
+		fout << x << " " << y << " " << z << " " << endl;
+	}
+	fout.close();
+}
+
+//#####################################################################################
 void preparation(){
 	//Reading all nesessary data from .dat files
 	readData();
-	calculate_logscale_waves();
-	calculate_Klambda();
+	calculateLogscaleWaves();
+	calculateKlambda();
 }
 
 int main(int argc, char **argv){
@@ -308,7 +345,7 @@ int main(int argc, char **argv){
 	//starRoutine();
 	//All actions related to outer disc
 	discRoutine(spectre_out, spectre_in);
-	
+	plotTMp();
 	
 	cout << "done" << endl;
 
