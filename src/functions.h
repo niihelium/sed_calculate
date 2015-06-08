@@ -10,6 +10,12 @@ long double F_irr(long double star_luminocity, long double r);
 long double t_surf(Cell cell, long double t_midplane); 
 long double planck(long double lambda, long double t);
 
+
+long double omega(long double r);
+long double nu_sigma(long double a_rate, long double r, long double star_radius);
+long double t_surf_in(Cell cell, long double star_luminocity, long double star_radius, long double a_rate);
+
+
 long double t_eff(long double star_luminocity, long double star_radius);
 
 long double unlog10(double long value);

@@ -28,15 +28,17 @@ int cell_num = 0;
 long double system_age;
 long double star_luminocity;
 long double star_radius;
+long double a_rate;
 
 list<Cell> cells_outer;
+list<Cell> cells_inner;
 
 list<int> line_index;
 
-list<long double> cell_t_phi_0;
+/*list<long double> cell_t_phi_0;
 list<long double> cell_t_phi_90;
 list<long double> cell_t_phi_180;
-list<long double> cell_t_phi_270;
+list<long double> cell_t_phi_270;*/
 
 //Lets calculate wavelengths before main program #################################
 long double lambda_min = 1e-1l;
@@ -113,15 +115,14 @@ void calculate_Klambda(){
 void readData(){
 	cout << "Reading data" << endl;
 	DataReader::readOuterData(system_age, cells_outer);
+	DataReader::readInnerData(system_age, cells_inner);
 	DataReader::readKlambda(k_lambda_temp, k_lambda);
-	DataReader::readArate(system_age, star_luminocity, star_radius);
+	DataReader::readArate(system_age, star_luminocity, star_radius, a_rate);
 	cout << "Data reading complete" << endl;
 }
 
 //Star calculation adapted to new sequence ############################################
 long double calcStar(long double nu, long double star_radius, long double t){
-	//Calculate star effective temperature by 17 equation
-	long double t = t_eff(star_luminocity, star_radius);
 	//Planck result
 	long double B = planck(nu, t);
 	//Function 16 result
@@ -135,6 +136,7 @@ void starRoutine(){
 	ofstream star_out("star_result.dat");
 	//Assign starting spectre position at minal lambda
 	long double lambda = lambda_min;
+	//Calculate star effective temperature by 17 equation
 	long double t = t_eff(star_luminocity, star_radius);
 	for (int i = 0; i < precision; ++i){
 			//WTF?? Something related to logariphmic scale
@@ -159,13 +161,10 @@ void starRoutine(){
 //#####################################################################################
 
 //Looks like outer disk calculation adapted to new sequence ###########################
-
-
-
 long double calcOuterDiscCell(Cell cell, long double nu, int n) {
 	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25l);
 
-	if (double_equals(cell.phi_, 0.613592E-02l, 0.00001) && cell.line_index_ != cell_num){ //0.3514336
+	/*if (double_equals(cell.phi_, 0.613592E-02l, 0.00001) && cell.line_index_ != cell_num){ //0.3514336
         cell_t_phi_0.insert(cell_t_phi_0.end(), surf_t);
         cell_num = cell.line_index_;
 	}else if (double_equals(cell.phi_, 0.157693E+01l, 0.00001) && cell.line_index_ != cell_num){ //90.3514336
@@ -177,45 +176,59 @@ long double calcOuterDiscCell(Cell cell, long double nu, int n) {
 	}else if (double_equals(cell.phi_, 0.471852E+01, 0.00001) && cell.line_index_ != cell_num){ //270.351282
        	cell_t_phi_270.insert(cell_t_phi_270.end(), surf_t);		
        	cell_num = cell.line_index_;
-	}
-
-	
-	//long double surf_t = 200.l;
-	//cout << "in calcOuterDiscCell(): surf_t=" << surf_t << endl;
-	//cin.ignore();
-	
-		
+	}*/
 	long double B = planck(nu, surf_t);
-	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);
 	//TESTING
+	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);	
 	long double cell_sigma_k_lambda = -((cell.sigma_/100.0l)*k_lambda_precalculated[n]);
-	long double t1 = exp(cell_sigma_k_lambda * (one_div_cos_gamma));
-	/*cout << scientific;
-	cout.precision(6);
-	cout << "cell_sigma=" << cell_sigma << " t1=" << t1 << endl;
-	cin.ignore();*/
+	long double t1 = exp(cell_sigma_k_lambda * one_div_cos_gamma);
 	//TESTING
-	long double F = (cell.s_ / d_sq) * B* (1.0l - t1); // 14 formula (planck+ t_surf)
+
+	//cout << "cell.s_=" << cell.s_ << "d_sq=" << d_sq << "B=" << B << endl;
+	//cin.ignore();	
+	long double F = (cell.s_ / d_sq) * B *(1.0l - t1); // 14 formula (planck+ t_surf)
+	//long double F = B *(1.0l - t1); // 14 formula (planck+ t_surf)
 	return F;
 }
 
-void discOutputRoutine(long double spectre[]){
-	ofstream fout("outer_result.dat");
+long double calcInnerDiscCell(Cell cell, long double nu, int n) {
+	long double surf_t = pow(t_surf_in(cell, star_luminocity, star_radius, a_rate), 0.25l);
+
+	long double B = planck(nu, surf_t);
+	//TESTING
+	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);	
+	long double cell_sigma_k_lambda = -((cell.sigma_/100.0l)*k_lambda_precalculated[n]);
+	long double t1 = exp(cell_sigma_k_lambda * one_div_cos_gamma);
+	//TESTING
+
+	//cout << "cell.s_=" << cell.s_ << "d_sq=" << d_sq << "B=" << B << endl;
+	//cin.ignore();	
+	long double F = (cell.s_ / d_sq) * B *(1.0l - t1); // 14 formula (planck+ t_surf)
+	//long double F = B *(1.0l - t1); // 14 formula (planck+ t_surf)
+	return F;
+}
+
+void discOutputRoutine(long double spectre_out[], long double spectre_in[]){
+	ofstream fout_out("outer_result.dat");
+	ofstream fout_in("inner_result.dat");
+
 	ofstream fout0("cell_t_phi_0.dat");
 	ofstream fout90("cell_t_phi_90.dat");
 	ofstream fout180("cell_t_phi_180.dat");
 	ofstream fout270("cell_t_phi_270.dat");
-	if(fout.is_open()){
+	if(fout_out.is_open() && fout_in.is_open()){
     	cout << "File Opened successfully. Writing data from array to file" << endl;
 
 		for(int i = 0; i < precision; ++i){
-      		fout << wavelengths[i] << " " << spectre[i] << endl; //writing ith character of array in the file      		
-      		//fout << wavelengths[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
-		}
+      		//fout_out << wavelengths[i] << " " << spectre_out[i] << endl; //writing ith character of array in the file      		
+      		fout_out << wavelengths[i] << " " << ((spectre_out[i] < 1e-11l) ? (0) : (spectre_out[i])) << endl;
+      		fout_in << wavelengths[i] << " " << ((spectre_in[i] < 1e-11l) ? (0) : (spectre_in[i])) << endl;
 
+		}
     	cout << "Array data successfully saved into the file result.dat" << endl;
 	}
-	for (long double  & t : cell_t_phi_0){
+
+	/*for (long double  & t : cell_t_phi_0){
 		fout0 << t << endl;
 	}
 	for (long double  & t : cell_t_phi_90){
@@ -226,18 +239,36 @@ void discOutputRoutine(long double spectre[]){
 	}
 	for (long double  & t : cell_t_phi_270){
 		fout270 << t << endl;
-	}
-	fout.close();
+	}	
 	fout90.close();
 	fout180.close();
 	fout270.close();
-	fout0.close();
+	fout0.close();*/
+
+	fout_out.close();
+	fout_in.close();
 	
 }
 
-void discRoutine(long double spectre[] ){
+void discRoutine(long double spectre_out[], long double spectre_in[]){
 	//parallel_for()
-	for (Cell & cell : cells_outer){
+	for (Cell & cell : cells_inner)
+	{
+		cout << cell.line_index_ << "\r" << flush;
+		long double lambda = lambda_min;
+		for (int i = 0; i < precision; ++i){
+			lambda = wavelengths[i];
+			long double frequency = C/(lambda*0.0001); // cm/s /cm = 1/s
+
+			long double counting_result = calcInnerDiscCell(cell, frequency, i);
+			//cout << "discRoutine(): counting_result=" << counting_result << endl;
+			if (counting_result == counting_result && !std::isinf(counting_result)){
+				spectre_in[i] = spectre_in[i] + counting_result*frequency;
+			}
+		}
+	}
+
+	/*for (Cell & cell : cells_outer){
 		cout << cell.line_index_ << "\r" << flush;
 		long double lambda = lambda_min;
 		for (int i = 0; i < precision; ++i){
@@ -247,11 +278,12 @@ void discRoutine(long double spectre[] ){
 			long double counting_result = calcOuterDiscCell(cell, frequency, i);
 			//cout << "discRoutine(): counting_result=" << counting_result << endl;
 			if (counting_result == counting_result && !std::isinf(counting_result)){
-				spectre[i] = spectre[i] + counting_result*frequency;
+				spectre_out[i] = spectre_out[i] + counting_result*frequency;
 			}
 		}		
-	}
-	discOutputRoutine(spectre);
+	}*/
+
+	discOutputRoutine(spectre_out, spectre_in);
 }
 //#####################################################################################
 void preparation(){
@@ -265,15 +297,17 @@ int main(int argc, char **argv){
 	preparation();
 
 	//Initialising output spectre and nullify it
-	long double spectre[(int)precision];
+	long double spectre_out[(int)precision];
+	long double spectre_in[(int)precision];
 	for (int i = 0; i < precision; ++i){
-		spectre[i] = 0;
+		spectre_out[i] = 0.0l;
+		spectre_in[i] = 0.0l;
 	}
 
 	//All actions related to star
 	//starRoutine();
 	//All actions related to outer disc
-	discRoutine(spectre);
+	discRoutine(spectre_out, spectre_in);
 	
 	
 	cout << "done" << endl;

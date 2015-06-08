@@ -14,12 +14,17 @@ static const long double t_background = 1.0e+01l; //10 k
 static const long double C = 2.99792458e+10l; //light speed
 static const long double C_sq = C*C; //light speed^2
 static const long double sun_radius = 6.96e+10l; //sun radius in cm
-static const long double mkm_to_hz =	2.99792458e+14l;// 1 mkm = mkm_to_hz Hz
+static const long double mkm_to_hz = 2.99792458e+14l;// 1 mkm = mkm_to_hz Hz
+static const long double G = 6.6725985e-8; //Gravitational constant cm3 g-1 s-2
 
 //functions
 static const long double PIl3 = 3.0l*M_PIl;
 static const long double PIl4 = 4.0l*M_PIl;
 static const long double h2 = 2.0l*h;
+
+static const long double M_star = 0.75l * 1.99e+33l; //star mass in g
+
+
 
 //sed_calculate
 static const long double gamma_incl = 0.0l;

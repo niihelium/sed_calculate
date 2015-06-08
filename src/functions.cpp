@@ -86,12 +86,22 @@ long double planck(long double nu, long double t){
 //  888   888  888 888  888 Y8b.     888          888  .d88P 888      X88 Y88b.    
 //8888888 888  888 888  888  "Y8888  888          8888888P"  888  88888P'  "Y8888P 
 
+long double omega(long double r){
+	long double t = (G*M_star)/pow(r, 3.0l);
+	long double omega = pow(t, 0.25l);
+	return omega;
+}
 
+long double nu_sigma(long double a_rate, long double r, long double star_radius){
+	long double nu_sigma = (a_rate/PIl3)*(1.0l - pow((star_radius/r), 0.5l));
+	return nu_sigma;
+}
 
-
-
-
-
+long double t_surf_in(Cell cell, long double star_luminocity, long double star_radius, long double a_rate) {
+	long double v1 = (9.0l/SIGMA*8.0l)*pow(omega(cell.r_), 2.0l);//*nu_sigma(a_rate, cell.r_, star_radius);
+	long double t_surf_in = v1 + pow(t_background, 4.0l) + F_irr(star_luminocity, cell.r_)/SIGMA;
+	return t_surf_in;
+}
 
  //.d8888b.                    888                    888       .d8888b.  888                     
 //d88P  Y88b                   888                    888      d88P  Y88b 888                     
