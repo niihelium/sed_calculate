@@ -222,25 +222,13 @@ long double calcInnerDiscCell(Cell cell, long double nu, int n) {
 	return F;
 }
 
-void discOutputRoutine(long double spectre_out[], long double spectre_in[]){
-	ofstream fout_out("outer_result.dat");
-	ofstream fout_in("inner_result.dat");
+void discOutputRoutine(){
+
 
 	/*ofstream fout0("cell_t_phi_0.dat");
 	ofstream fout90("cell_t_phi_90.dat");
 	ofstream fout180("cell_t_phi_180.dat");
 	ofstream fout270("cell_t_phi_270.dat");*/
-	if(fout_out.is_open() && fout_in.is_open()){
-    	cout << "File Opened successfully. Writing data from array to file" << endl;
-
-		for(int i = 0; i < precision; ++i){
-      		//fout_out << wavelengths[i] << " " << spectre_out[i] << endl; //writing ith character of array in the file      		
-      		fout_out << wavelengths[i] << " " << ((spectre_out[i] < 1e-11l) ? (0) : (spectre_out[i])) << endl;
-      		fout_in << wavelengths[i] << " " << ((spectre_in[i] < 1e-11l) ? (0) : (spectre_in[i])) << endl;
-
-		}
-    	cout << "Array data successfully saved into the file result.dat" << endl;
-	}
 
 	/*for (long double  & t : cell_t_phi_0){
 		fout0 << t << endl;
@@ -258,12 +246,27 @@ void discOutputRoutine(long double spectre_out[], long double spectre_in[]){
 	fout180.close();
 	fout270.close();
 	fout0.close();*/
-
-	fout_out.close();
-	fout_in.close();	
 }
 
-void innerCycle(long double spectre_in[]){
+void dataOutput(long double spectre[], string filename){
+	ofstream fout(filename);
+	if(fout.is_open()){
+		cout << "File:" << filename <<  " opened successfully. Writing data from array to file" << endl;
+		for(int i = 0; i < precision; ++i){
+			fout << spectre[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
+		}
+	}
+	cout << "Array data successfully saved into the file " << filename << endl;
+	fout.close();
+}
+
+void innerCycle(){
+
+	long double spectre[(int)precision];
+	for (int i = 0; i < precision; ++i){
+		spectre[i] = 0.0l;
+	}
+
 	for (Cell & cell : cells_inner)
 	{
 		cout << cell.line_index_ << "\r" << flush;
@@ -275,13 +278,20 @@ void innerCycle(long double spectre_in[]){
 			long double counting_result = calcInnerDiscCell(cell, frequency, i);
 			//cout << "discRoutine(): counting_result=" << counting_result << endl;
 			if (counting_result == counting_result && !std::isinf(counting_result)){
-				spectre_in[i] = spectre_in[i] + counting_result*frequency;
+				spectre[i] = spectre[i] + counting_result*frequency;
 			}
 		}
 	}
+	dataOutput(spectre, "inner_disk.dat");
 }
 
-void outerCycle(long double spectre_out[]){
+void outerCycle(){
+
+	long double spectre[(int)precision];
+	for (int i = 0; i < precision; ++i){
+		spectre[i] = 0.0l;
+	}
+
 	for (Cell & cell : cells_outer){
 		cout << cell.line_index_ << "\r" << flush;
 		long double lambda = lambda_min;
@@ -292,20 +302,16 @@ void outerCycle(long double spectre_out[]){
 			long double counting_result = calcOuterDiscCell(cell, frequency, i);
 			//cout << "discRoutine(): counting_result=" << counting_result << endl;
 			if (counting_result == counting_result && !std::isinf(counting_result)){
-				spectre_out[i] = spectre_out[i] + counting_result*frequency;
+				spectre[i] = spectre[i] + counting_result*frequency;
 			}
 		}		
 	}
-
-
+	dataOutput(spectre, "outer_disk.dat");
 }
 
-void discRoutine(long double spectre_out[], long double spectre_in[]){
-	//parallel_for()
-	innerCycle(spectre_in);
-	outerCycle(spectre_out);	
-
-	discOutputRoutine(spectre_out, spectre_in);
+void discRoutine(){
+	innerCycle();
+	outerCycle();	
 }
 //#####################################################################################
 
@@ -333,18 +339,10 @@ void preparation(){
 int main(int argc, char **argv){
 	preparation();
 
-	//Initialising output spectre and nullify it
-	long double spectre_out[(int)precision];
-	long double spectre_in[(int)precision];
-	for (int i = 0; i < precision; ++i){
-		spectre_out[i] = 0.0l;
-		spectre_in[i] = 0.0l;
-	}
-
 	//All actions related to star
 	//starRoutine();
 	//All actions related to outer disc
-	discRoutine(spectre_out, spectre_in);
+	discRoutine();
 	plotTMp();
 	
 	cout << "done" << endl;
