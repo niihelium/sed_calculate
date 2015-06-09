@@ -160,11 +160,8 @@ void starRoutine(){
 }
 //#####################################################################################
 
-//Looks like outer disk calculation adapted to new sequence ###########################
-long double calcOuterDiscCell(Cell cell, long double nu, int n) {
-	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25l);
-
-	/*if (double_equals(cell.phi_, 0.613592E-02l, 0.00001) && cell.line_index_ != cell_num){ //0.3514336
+void fillTProfile(Cell cell, long double surf_t){
+	if (double_equals(cell.phi_, 0.613592E-02l, 0.00001) && cell.line_index_ != cell_num){ //0.3514336
         cell_t_phi_0.insert(cell_t_phi_0.end(), surf_t);
         cell_num = cell.line_index_;
 	}else if (double_equals(cell.phi_, 0.157693E+01l, 0.00001) && cell.line_index_ != cell_num){ //90.3514336
@@ -176,55 +173,40 @@ long double calcOuterDiscCell(Cell cell, long double nu, int n) {
 	}else if (double_equals(cell.phi_, 0.471852E+01, 0.00001) && cell.line_index_ != cell_num){ //270.351282
        	cell_t_phi_270.insert(cell_t_phi_270.end(), surf_t);		
        	cell_num = cell.line_index_;
-	}*/
+	}
+}
+
+//Looks like outer disk calculation adapted to new sequence ###########################
+long double calcOuterDiscCell(Cell cell, long double nu, int n, long double gamma_incl) {
+	long double surf_t = pow(t_surf(cell, star_luminocity), 0.25l);
+	
 	long double B = planck(nu, surf_t);
 	//TESTING
-	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);	
+	long double one_div_cos_gamma = 1.0l /cos(gamma_incl);
+
 	long double cell_sigma_k_lambda = -((cell.sigma_/100.0l)*k_lambda_precalculated[n]);
 	long double t1 = exp(cell_sigma_k_lambda * one_div_cos_gamma);
 	//TESTING
 
-	//cout << "cell.s_=" << cell.s_ << "d_sq=" << d_sq << "B=" << B << endl;
-	//cin.ignore();	
-	long double F = (cell.s_ / d_sq) * B *(1.0l - t1); // 14 formula (planck+ t_surf)
-	//long double F = B *(1.0l - t1); // 14 formula (planck+ t_surf)
+	long double F = ((cell.s_*cos(gamma_incl)) / d_sq) * B *(1.0l - t1); // 14 formula (planck+ t_surf)
 	return F;
 }
 
-long double calcInnerDiscCell(Cell cell, long double nu, int n) {
+long double calcInnerDiscCell(Cell cell, long double nu, int n, long double gamma_incl) {
 	long double surf_t = pow(t_surf_in(cell, star_luminocity, star_radius, a_rate), 0.25l);
-
-	/*if (double_equals(cell.phi_, 0.613592E-02l, 0.00001) && cell.line_index_ != cell_num){ //0.3514336
-        cell_t_phi_0.insert(cell_t_phi_0.end(), surf_t);
-        cell_num = cell.line_index_;
-	}else if (double_equals(cell.phi_, 0.157693E+01l, 0.00001) && cell.line_index_ != cell_num){ //90.3514336
-        cell_t_phi_90.insert(cell_t_phi_90.end(), surf_t);
-        cell_num = cell.line_index_;
-	}else if (double_equals(cell.phi_, 0.314773E+01, 0.00001) && cell.line_index_ != cell_num){ //180.351644
-		cell_t_phi_180.insert(cell_t_phi_180.end(), surf_t);
-		cell_num = cell.line_index_;
-	}else if (double_equals(cell.phi_, 0.471852E+01, 0.00001) && cell.line_index_ != cell_num){ //270.351282
-       	cell_t_phi_270.insert(cell_t_phi_270.end(), surf_t);		
-       	cell_num = cell.line_index_;
-	}*/
 
 	long double B = planck(nu, surf_t);
 	//TESTING
-	long double one_div_cos_gamma = 1.0l; // =1.0l /cos(gamma_incl);	
+	long double one_div_cos_gamma = 1.0l /cos(gamma_incl);	
 	long double cell_sigma_k_lambda = -((cell.sigma_/100.0l)*k_lambda_precalculated[n]);
 	long double t1 = exp(cell_sigma_k_lambda * one_div_cos_gamma);
 	//TESTING
 
-	//cout << "cell.s_=" << cell.s_ << "d_sq=" << d_sq << "B=" << B << endl;
-	//cin.ignore();	
-	long double F = (cell.s_ / d_sq) * B *(1.0l - t1); // 14 formula (planck+ t_surf)
-	//long double F = B *(1.0l - t1); // 14 formula (planck+ t_surf)
+	long double F = ((cell.s_*cos(gamma_incl)) / d_sq) * B *(1.0l - t1); // 14 formula (planck+ t_surf)
 	return F;
 }
 
 void discOutputRoutine(){
-
-
 	/*ofstream fout0("cell_t_phi_0.dat");
 	ofstream fout90("cell_t_phi_90.dat");
 	ofstream fout180("cell_t_phi_180.dat");
@@ -253,14 +235,14 @@ void dataOutput(long double spectre[], string filename){
 	if(fout.is_open()){
 		cout << "File:" << filename <<  " opened successfully. Writing data from array to file" << endl;
 		for(int i = 0; i < precision; ++i){
-			fout << spectre[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
+			fout << wavelengths[i] << " " << ((spectre[i] < 1e-11l) ? (0) : (spectre[i])) << endl;
 		}
 	}
 	cout << "Array data successfully saved into the file " << filename << endl;
 	fout.close();
 }
 
-void innerCycle(){
+void innerCycle(long double gamma_incl){
 
 	long double spectre[(int)precision];
 	for (int i = 0; i < precision; ++i){
@@ -269,23 +251,27 @@ void innerCycle(){
 
 	for (Cell & cell : cells_inner)
 	{
-		cout << cell.line_index_ << "\r" << flush;
+		cout << radInDeg(gamma_incl) << "deg, " << cell.line_index_ << "\r" << flush;
 		long double lambda = lambda_min;
 		for (int i = 0; i < precision; ++i){
 			lambda = wavelengths[i];
 			long double frequency = C/(lambda*0.0001); // cm/s /cm = 1/s
 
-			long double counting_result = calcInnerDiscCell(cell, frequency, i);
+			long double counting_result = calcInnerDiscCell(cell, frequency, i, gamma_incl);
 			//cout << "discRoutine(): counting_result=" << counting_result << endl;
 			if (counting_result == counting_result && !std::isinf(counting_result)){
 				spectre[i] = spectre[i] + counting_result*frequency;
 			}
 		}
 	}
-	dataOutput(spectre, "inner_disk.dat");
+	stringstream sstm;
+	sstm << "../output/inner_disc_" << radInDeg(gamma_incl) << "deg.dat";
+	string filename = sstm.str();
+
+	dataOutput(spectre, filename);
 }
 
-void outerCycle(){
+void outerCycle(long double gamma_incl){
 
 	long double spectre[(int)precision];
 	for (int i = 0; i < precision; ++i){
@@ -293,25 +279,34 @@ void outerCycle(){
 	}
 
 	for (Cell & cell : cells_outer){
-		cout << cell.line_index_ << "\r" << flush;
+		cout << radInDeg(gamma_incl) << "deg, " << cell.line_index_ << "\r" << flush;
 		long double lambda = lambda_min;
 		for (int i = 0; i < precision; ++i){
 			lambda = wavelengths[i];
 			long double frequency = C/(lambda*0.0001); // cm/s /cm = 1/s
 
-			long double counting_result = calcOuterDiscCell(cell, frequency, i);
+			long double counting_result = calcOuterDiscCell(cell, frequency, i, gamma_incl);
 			//cout << "discRoutine(): counting_result=" << counting_result << endl;
 			if (counting_result == counting_result && !std::isinf(counting_result)){
 				spectre[i] = spectre[i] + counting_result*frequency;
 			}
 		}		
 	}
-	dataOutput(spectre, "outer_disk.dat");
+	stringstream sstm;
+	sstm << "../output/outer_disc_" << radInDeg(gamma_incl) << "deg.dat";
+	string filename = sstm.str();
+
+	dataOutput(spectre, filename);
 }
 
 void discRoutine(){
-	innerCycle();
-	outerCycle();	
+	//innerCycle(0.0l);
+	outerCycle(degInRad(0.0l));	
+	outerCycle(degInRad(20.0l));	
+	outerCycle(degInRad(45.0l));
+	outerCycle(degInRad(75.0l));	
+	outerCycle(degInRad(85.0l));
+	outerCycle(degInRad(89.0l));
 }
 //#####################################################################################
 

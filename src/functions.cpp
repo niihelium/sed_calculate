@@ -147,3 +147,11 @@ bool double_equals(long double a, long double b, long double epsilon)
 {
     return fabs(a - b) < epsilon;
 } 
+
+long double degInRad(long double degree){
+	return degree*(M_PIl/180.0l);
+}
+
+long double radInDeg(long double rad){
+	return rad*(180.0l/M_PIl);
+}

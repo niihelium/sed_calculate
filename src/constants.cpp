@@ -27,7 +27,6 @@ static const long double M_star = 0.75l * 1.99e+33l; //star mass in g
 
 
 //sed_calculate
-static const long double gamma_incl = 0.0l;
 static const long double d = 3.08568000e+20l; //100pc distance to object cm
 static const long double d_sq = d*d; //100pc distance to object cm
 static const long double phi0 = 0.0l;
